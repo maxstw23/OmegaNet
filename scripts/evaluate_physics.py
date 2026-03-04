@@ -1,60 +1,56 @@
 import torch
-import numpy as np
-import matplotlib.pyplot as plt
-from torch_geometric.loader import DataLoader
-from torch_geometric.data import Data
-from sklearn.metrics import roc_curve, auc, ConfusionMatrixDisplay
-from sklearn.model_selection import train_test_split
+from torch_geometric.data import Data, DataLoader
 import config
-from gat_model import PhysicsGAT
+from pfn_model import OmegaPFN
+from tqdm import tqdm
 
 
-def evaluate_model():
-    # 1. Load and Rebuild Graph Objects for validation
-    raw_data = torch.load(config.DATA_PATH)
-    dataset = []
-    for entry in raw_data:
-        n_nodes = entry['x'].size(0)
-        edge_index = torch.combinations(torch.arange(n_nodes), r=2).t() if n_nodes > 1 else torch.tensor([[0], [0]],
-                                                                                                         dtype=torch.long)
-        dataset.append(Data(x=entry['x'], edge_index=edge_index, y=entry['y'].squeeze()))
+def evaluate():
+    device = config.DEVICE
+    print(f"Loading Deep Sets Model: {config.MODEL_SAVE_PATH}")
 
-    _, val_data = train_test_split(dataset, test_size=(1 - config.TRAIN_SPLIT), random_state=config.RANDOM_SEED)
-    loader = DataLoader(val_data, batch_size=config.BATCH_SIZE, shuffle=False)
-
-    # 2. Load Model
-    model = PhysicsGAT(config.HIDDEN_CHANNELS, config.ATTENTION_HEADS).to(config.DEVICE)
-    model.load_state_dict(torch.load(config.MODEL_SAVE_PATH))
+    model = OmegaPFN(5, config.HIDDEN_CHANNELS, 2).to(device)
+    model.load_state_dict(torch.load(config.MODEL_SAVE_PATH, map_location=device))
     model.eval()
 
-    all_probs, all_preds, all_labels = [], [], []
+    raw_data = torch.load(config.DATA_PATH)
+    dataset = []
+    print("Preparing Evaluation Sets...")
+    for entry in tqdm(raw_data):
+        x, y = entry['x'], entry['y']
+
+        # Consistent Scaling
+        x[:, 1] = torch.clamp(x[:, 1], max=config.DPT_CLIP)
+        x = (x - config.FEATURE_MEANS) / config.FEATURE_STDS
+
+        dataset.append(Data(x=x, y=y.squeeze().long()))
+
+    # Exact same 20% validation split
+    split_idx = int(0.8 * len(dataset))
+    val_loader = DataLoader(dataset[split_idx:], batch_size=config.BATCH_SIZE)
+
+    o_t, o_p, a_t, a_p = 0, 0, 0, 0
     with torch.no_grad():
-        for batch in loader:
-            batch = batch.to(config.DEVICE)
-            out = model(batch.x, batch.edge_index, batch.batch)
-            all_probs.extend(torch.softmax(out, dim=1)[:, 1].cpu().numpy())
-            all_preds.extend(out.argmax(dim=1).cpu().numpy())
-            all_labels.extend(batch.y.cpu().numpy())
+        for batch in val_loader:
+            batch = batch.to(device)
+            out = model(batch.x, batch.batch)
+            preds = out.argmax(dim=1)
 
-    # 3. Generate Visuals
-    ConfusionMatrixDisplay.from_predictions(all_labels, all_preds, display_labels=['Omega', 'Anti-Omega'],
-                                            cmap=plt.cm.Blues)
-    plt.title("Confusion Matrix")
-    plt.savefig("confusion_matrix.png")
+            o_t += (batch.y == 0).sum().item()
+            o_p += ((preds == 0) & (batch.y == 0)).sum().item()
+            a_t += (batch.y == 1).sum().item()
+            a_p += ((preds == 1) & (batch.y == 1)).sum().item()
 
-    fpr, tpr, _ = roc_curve(all_labels, all_probs)
-    roc_auc = auc(fpr, tpr)
-    plt.figure()
-    plt.plot(fpr, tpr, color='darkorange', label=f'ROC (AUC = {roc_auc:.4f})')
-    plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Physics Signal Detection')
-    plt.legend(loc="lower right")
-    plt.savefig("roc_curve.png")
+    o_rec = o_p / o_t if o_t > 0 else 0
+    a_rec = a_p / a_t if a_t > 0 else 0
+    score = o_rec + a_rec - 1.0
 
-    print(f"Evaluation complete. AUC: {roc_auc:.4f}")
+    print("\n" + "=" * 40)
+    print(f"  Omega Recall (Junction?): {o_rec:.4f}")
+    print(f"   Anti Recall:             {a_rec:.4f}")
+    print(f" Physics Score:             {score:.4f}")
+    print("=" * 40)
 
 
 if __name__ == "__main__":
-    evaluate_model()
+    evaluate()
