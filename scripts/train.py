@@ -7,6 +7,10 @@ from tqdm import tqdm
 
 
 def run_training():
+    stats = torch.load(config.STATS_PATH)
+    feature_means = stats['means']
+    feature_stds = stats['stds']
+
     raw_data = torch.load(config.DATA_PATH)
     dataset = []
     labels = []
@@ -19,7 +23,7 @@ def run_training():
 
         # Node Features Scaling
         x[:, 1] = torch.clamp(x[:, 1], max=config.DPT_CLIP)
-        x = (x - config.FEATURE_MEANS) / config.FEATURE_STDS
+        x = (x - feature_means) / feature_stds
 
         # Simply store the set of Kaons and the label. No edge_index needed.
         dataset.append(Data(x=x, y=target))
@@ -31,6 +35,9 @@ def run_training():
     print(f"Weights calculated -> Omega: {weights[0]:.2f}, Anti: {weights[1]:.2f}")
 
     # Splits
+    import random
+    random.seed(42)
+    random.shuffle(dataset)
     split = int(0.8 * len(dataset))
     train_loader = DataLoader(dataset[:split], batch_size=config.BATCH_SIZE, shuffle=True)
     val_loader = DataLoader(dataset[split:], batch_size=config.BATCH_SIZE)

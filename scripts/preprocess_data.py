@@ -82,7 +82,9 @@ def run_balanced_preprocessing(input_file, output_file):
         d_phi = (d_phi + np.pi) % (2 * np.pi) - np.pi
 
         # Node Features: [pT, d_pt, d_eta, d_phi, charge]
-        node_features = np.stack([f_pt, d_pt, d_eta, d_phi, f_q], axis=1)
+        # f_q encoded as relative sign w.r.t. Omega: same-sign = +1, opposite-sign = -1
+        rel_q = f_q * np.sign(o_charge)
+        node_features = np.stack([f_pt, d_pt, d_eta, d_phi, rel_q], axis=1)
 
         y_label = 1 if o_charge > 0 else 0
         processed_graphs.append({
@@ -92,6 +94,17 @@ def run_balanced_preprocessing(input_file, output_file):
 
     print(f"Saving {len(processed_graphs)} graphs...")
     torch.save(processed_graphs, output_file)
+
+    print("Computing feature statistics...")
+    all_features = torch.cat([g['x'] for g in processed_graphs], dim=0)
+    means = all_features.mean(dim=0)
+    stds = all_features.std(dim=0)
+    stds[stds == 0] = 1.0  # avoid division by zero for constant features (e.g. f_q after balancing)
+    stats_file = output_file.replace(".pt", "_stats.pt")
+    torch.save({'means': means, 'stds': stds}, stats_file)
+    print(f"Feature stats saved to {stats_file}")
+    for name, m, s in zip(["f_pt", "d_pt", "d_eta", "d_phi", "f_q"], means, stds):
+        print(f"  {name}: mean={m:.4f}, std={s:.4f}")
     print("Done!")
 
 

@@ -13,6 +13,10 @@ def evaluate():
     model.load_state_dict(torch.load(config.MODEL_SAVE_PATH, map_location=device))
     model.eval()
 
+    stats = torch.load(config.STATS_PATH)
+    feature_means = stats['means']
+    feature_stds = stats['stds']
+
     raw_data = torch.load(config.DATA_PATH)
     dataset = []
     print("Preparing Evaluation Sets...")
@@ -21,11 +25,14 @@ def evaluate():
 
         # Consistent Scaling
         x[:, 1] = torch.clamp(x[:, 1], max=config.DPT_CLIP)
-        x = (x - config.FEATURE_MEANS) / config.FEATURE_STDS
+        x = (x - feature_means) / feature_stds
 
         dataset.append(Data(x=x, y=y.squeeze().long()))
 
-    # Exact same 20% validation split
+    # Exact same 20% validation split (must match shuffle in train.py)
+    import random
+    random.seed(42)
+    random.shuffle(dataset)
     split_idx = int(0.8 * len(dataset))
     val_loader = DataLoader(dataset[split_idx:], batch_size=config.BATCH_SIZE)
 
