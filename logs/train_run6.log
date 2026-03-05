@@ -1,0 +1,58 @@
+Preparing Transformer dataset...
+  0%|          | 0/153832 [00:00<?, ?it/s]  2%|▏         | 2719/153832 [00:00<00:05, 27187.11it/s]  4%|▍         | 6225/153832 [00:00<00:04, 31813.57it/s]  6%|▋         | 9620/153832 [00:00<00:04, 32785.25it/s]  8%|▊         | 12955/153832 [00:00<00:04, 33004.55it/s] 11%|█         | 16430/153832 [00:00<00:04, 33631.61it/s] 13%|█▎        | 19812/153832 [00:00<00:03, 33692.82it/s] 15%|█▌        | 23182/153832 [00:00<00:03, 33689.43it/s] 17%|█▋        | 26551/153832 [00:01<00:07, 18055.30it/s] 19%|█▉        | 29811/153832 [00:01<00:05, 20904.03it/s] 22%|██▏       | 33148/153832 [00:01<00:05, 23629.56it/s] 24%|██▎       | 36535/153832 [00:01<00:04, 26065.54it/s] 26%|██▌       | 39994/153832 [00:01<00:04, 28228.22it/s] 28%|██▊       | 43390/153832 [00:01<00:03, 29751.05it/s] 30%|███       | 46789/153832 [00:01<00:03, 30917.09it/s] 33%|███▎      | 50182/153832 [00:01<00:03, 31765.76it/s] 35%|███▍      | 53608/153832 [00:01<00:03, 32479.90it/s] 37%|███▋      | 56967/153832 [00:01<00:02, 32463.46it/s] 39%|███▉      | 60291/153832 [00:02<00:02, 32251.67it/s] 41%|████▏     | 63571/153832 [00:02<00:02, 31950.91it/s] 43%|████▎     | 66805/153832 [00:02<00:02, 31980.68it/s] 46%|████▌     | 70057/153832 [00:02<00:02, 32134.68it/s] 48%|████▊     | 73345/153832 [00:02<00:02, 32354.08it/s] 50%|████▉     | 76595/153832 [00:02<00:02, 32296.83it/s] 52%|█████▏    | 79906/153832 [00:02<00:02, 32531.68it/s] 54%|█████▍    | 83167/153832 [00:02<00:02, 32078.73it/s] 56%|█████▌    | 86381/153832 [00:02<00:02, 31996.57it/s] 58%|█████▊    | 89594/153832 [00:02<00:02, 32035.09it/s] 60%|██████    | 92801/153832 [00:03<00:01, 31765.45it/s] 62%|██████▏   | 95980/153832 [00:03<00:01, 31585.24it/s] 64%|██████▍   | 99141/153832 [00:03<00:01, 31462.57it/s] 67%|██████▋   | 102385/153832 [00:03<00:01, 31734.20it/s] 69%|██████▊   | 105560/153832 [00:03<00:01, 31440.16it/s] 71%|███████   | 108789/153832 [00:03<00:01, 31690.28it/s] 73%|███████▎  | 112010/153832 [00:03<00:01, 31841.77it/s] 75%|███████▍  | 115207/153832 [00:03<00:01, 31877.79it/s] 77%|███████▋  | 118419/153832 [00:03<00:01, 31948.65it/s] 79%|███████▉  | 121615/153832 [00:04<00:01, 31736.53it/s] 81%|████████  | 124790/153832 [00:04<00:00, 31109.12it/s] 83%|████████▎ | 128013/153832 [00:04<00:00, 31438.12it/s] 85%|████████▌ | 131168/153832 [00:04<00:00, 31469.14it/s] 87%|████████▋ | 134317/153832 [00:04<00:01, 15697.82it/s] 89%|████████▉ | 137472/153832 [00:04<00:00, 18467.51it/s] 91%|█████████▏| 140659/153832 [00:04<00:00, 21143.77it/s] 94%|█████████▎| 143879/153832 [00:05<00:00, 23596.07it/s] 96%|█████████▌| 147079/153832 [00:05<00:00, 25617.75it/s] 98%|█████████▊| 150205/153832 [00:05<00:00, 27059.75it/s]100%|█████████▉| 153250/153832 [00:05<00:00, 27869.03it/s]100%|██████████| 153832/153832 [00:05<00:00, 28644.05it/s]
+/mnt/d/Research/Strangeness_GAT/venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:385: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+Dataset: 103751 Omega, 50081 Anti-Omega
+Loss weights -> Omega: 1.0, Anti: 3.5
+Model parameters: 274,626
+Starting training...
+
+Epoch 001 | Omega Rec: 0.436 | Anti Rec: 0.872 | A@0.55: 0.806 | Score: 0.3072 | LR: 0.000500 | No-improve: 0/25
+Epoch 002 | Omega Rec: 0.367 | Anti Rec: 0.915 | A@0.55: 0.869 | Score: 0.2811 | LR: 0.000500 | No-improve: 0/25
+Epoch 003 | Omega Rec: 0.548 | Anti Rec: 0.818 | A@0.55: 0.761 | Score: 0.3662 | LR: 0.000500 | No-improve: 1/25
+Epoch 004 | Omega Rec: 0.492 | Anti Rec: 0.853 | A@0.55: 0.801 | Score: 0.3448 | LR: 0.000500 | No-improve: 0/25
+Epoch 005 | Omega Rec: 0.443 | Anti Rec: 0.883 | A@0.55: 0.830 | Score: 0.3261 | LR: 0.000500 | No-improve: 1/25
+Epoch 006 | Omega Rec: 0.521 | Anti Rec: 0.843 | A@0.55: 0.791 | Score: 0.3642 | LR: 0.000500 | No-improve: 2/25
+Epoch 007 | Omega Rec: 0.454 | Anti Rec: 0.882 | A@0.55: 0.847 | Score: 0.3357 | LR: 0.000500 | No-improve: 3/25
+Epoch 008 | Omega Rec: 0.477 | Anti Rec: 0.869 | A@0.55: 0.819 | Score: 0.3457 | LR: 0.000500 | No-improve: 4/25
+Epoch 009 | Omega Rec: 0.424 | Anti Rec: 0.896 | A@0.55: 0.854 | Score: 0.3194 | LR: 0.000250 | No-improve: 5/25
+Epoch 010 | Omega Rec: 0.573 | Anti Rec: 0.815 | A@0.55: 0.759 | Score: 0.3882 | LR: 0.000250 | No-improve: 6/25
+Epoch 011 | Omega Rec: 0.546 | Anti Rec: 0.835 | A@0.55: 0.785 | Score: 0.3810 | LR: 0.000250 | No-improve: 0/25
+Epoch 012 | Omega Rec: 0.494 | Anti Rec: 0.863 | A@0.55: 0.824 | Score: 0.3572 | LR: 0.000250 | No-improve: 1/25
+Epoch 013 | Omega Rec: 0.618 | Anti Rec: 0.780 | A@0.55: 0.737 | Score: 0.3984 | LR: 0.000250 | No-improve: 2/25
+Epoch 014 | Omega Rec: 0.534 | Anti Rec: 0.836 | A@0.55: 0.796 | Score: 0.3700 | LR: 0.000250 | No-improve: 0/25
+Epoch 015 | Omega Rec: 0.546 | Anti Rec: 0.830 | A@0.55: 0.772 | Score: 0.3764 | LR: 0.000250 | No-improve: 1/25
+Epoch 016 | Omega Rec: 0.488 | Anti Rec: 0.868 | A@0.55: 0.821 | Score: 0.3558 | LR: 0.000250 | No-improve: 2/25
+Epoch 017 | Omega Rec: 0.516 | Anti Rec: 0.857 | A@0.55: 0.799 | Score: 0.3722 | LR: 0.000250 | No-improve: 3/25
+Epoch 018 | Omega Rec: 0.532 | Anti Rec: 0.844 | A@0.55: 0.801 | Score: 0.3761 | LR: 0.000250 | No-improve: 4/25
+Epoch 019 | Omega Rec: 0.445 | Anti Rec: 0.888 | A@0.55: 0.837 | Score: 0.3329 | LR: 0.000125 | No-improve: 5/25
+Epoch 020 | Omega Rec: 0.626 | Anti Rec: 0.779 | A@0.55: 0.724 | Score: 0.4049 | LR: 0.000125 | No-improve: 6/25
+Epoch 021 | Omega Rec: 0.463 | Anti Rec: 0.882 | A@0.55: 0.845 | Score: 0.3454 | LR: 0.000125 | No-improve: 0/25
+Epoch 022 | Omega Rec: 0.511 | Anti Rec: 0.857 | A@0.55: 0.814 | Score: 0.3687 | LR: 0.000125 | No-improve: 1/25
+Epoch 023 | Omega Rec: 0.511 | Anti Rec: 0.858 | A@0.55: 0.812 | Score: 0.3691 | LR: 0.000125 | No-improve: 2/25
+Epoch 024 | Omega Rec: 0.500 | Anti Rec: 0.864 | A@0.55: 0.822 | Score: 0.3638 | LR: 0.000125 | No-improve: 3/25
+Epoch 025 | Omega Rec: 0.527 | Anti Rec: 0.848 | A@0.55: 0.803 | Score: 0.3750 | LR: 0.000125 | No-improve: 4/25
+Epoch 026 | Omega Rec: 0.492 | Anti Rec: 0.868 | A@0.55: 0.825 | Score: 0.3608 | LR: 0.000063 | No-improve: 5/25
+Epoch 027 | Omega Rec: 0.528 | Anti Rec: 0.849 | A@0.55: 0.803 | Score: 0.3766 | LR: 0.000063 | No-improve: 6/25
+Epoch 028 | Omega Rec: 0.510 | Anti Rec: 0.857 | A@0.55: 0.817 | Score: 0.3674 | LR: 0.000063 | No-improve: 7/25
+Epoch 029 | Omega Rec: 0.509 | Anti Rec: 0.861 | A@0.55: 0.815 | Score: 0.3702 | LR: 0.000063 | No-improve: 8/25
+Epoch 030 | Omega Rec: 0.504 | Anti Rec: 0.863 | A@0.55: 0.822 | Score: 0.3667 | LR: 0.000063 | No-improve: 9/25
+Epoch 031 | Omega Rec: 0.498 | Anti Rec: 0.867 | A@0.55: 0.823 | Score: 0.3646 | LR: 0.000063 | No-improve: 10/25
+Epoch 032 | Omega Rec: 0.517 | Anti Rec: 0.852 | A@0.55: 0.813 | Score: 0.3693 | LR: 0.000031 | No-improve: 11/25
+Epoch 033 | Omega Rec: 0.524 | Anti Rec: 0.852 | A@0.55: 0.810 | Score: 0.3754 | LR: 0.000031 | No-improve: 12/25
+Epoch 034 | Omega Rec: 0.549 | Anti Rec: 0.837 | A@0.55: 0.792 | Score: 0.3866 | LR: 0.000031 | No-improve: 13/25
+Epoch 035 | Omega Rec: 0.550 | Anti Rec: 0.836 | A@0.55: 0.789 | Score: 0.3862 | LR: 0.000031 | No-improve: 14/25
+Epoch 036 | Omega Rec: 0.556 | Anti Rec: 0.833 | A@0.55: 0.787 | Score: 0.3887 | LR: 0.000031 | No-improve: 15/25
+Epoch 037 | Omega Rec: 0.532 | Anti Rec: 0.846 | A@0.55: 0.802 | Score: 0.3785 | LR: 0.000031 | No-improve: 16/25
+Epoch 038 | Omega Rec: 0.535 | Anti Rec: 0.844 | A@0.55: 0.802 | Score: 0.3795 | LR: 0.000016 | No-improve: 17/25
+Epoch 039 | Omega Rec: 0.537 | Anti Rec: 0.844 | A@0.55: 0.801 | Score: 0.3807 | LR: 0.000016 | No-improve: 18/25
+Epoch 040 | Omega Rec: 0.539 | Anti Rec: 0.842 | A@0.55: 0.799 | Score: 0.3816 | LR: 0.000016 | No-improve: 19/25
+Epoch 041 | Omega Rec: 0.531 | Anti Rec: 0.850 | A@0.55: 0.804 | Score: 0.3810 | LR: 0.000016 | No-improve: 20/25
+Epoch 042 | Omega Rec: 0.513 | Anti Rec: 0.861 | A@0.55: 0.817 | Score: 0.3736 | LR: 0.000016 | No-improve: 21/25
+Epoch 043 | Omega Rec: 0.512 | Anti Rec: 0.861 | A@0.55: 0.817 | Score: 0.3727 | LR: 0.000016 | No-improve: 22/25
+Epoch 044 | Omega Rec: 0.536 | Anti Rec: 0.847 | A@0.55: 0.800 | Score: 0.3825 | LR: 0.000008 | No-improve: 23/25
+Epoch 045 | Omega Rec: 0.526 | Anti Rec: 0.852 | A@0.55: 0.807 | Score: 0.3781 | LR: 0.000008 | No-improve: 24/25
+
+Early stopping: no improvement for 25 epochs.
+
+Best Score: 0.4049 | Anti (argmax): 0.7789 | A@0.55: 0.7238  →  saved to models/omega_transformer.pth

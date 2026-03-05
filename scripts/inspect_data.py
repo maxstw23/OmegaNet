@@ -18,7 +18,7 @@ def analyze_features():
     all_features = torch.cat(all_features, dim=0).numpy()
 
     # Updated labels to match your new preprocessing
-    feature_names = ["f_pt", "d_pt", "d_eta", "d_phi", "f_q"]
+    feature_names = ["f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star"]
 
     print("\n" + "=" * 65)
     print(f"{'Feature':<10} | {'Mean':<8} | {'Std':<8} | {'Min':<8} | {'Max':<8}")

@@ -5,6 +5,62 @@ import torch
 from tqdm import tqdm
 import os
 
+# PDG masses in GeV/c²
+M_KAON  = 0.493677
+M_OMEGA = 1.67245
+
+
+def compute_kstar(k_px, k_py, k_pz, o_px, o_py, o_pz):
+    """Lorentz-invariant relative momentum in the kaon-omega pair rest frame."""
+    E_k = np.sqrt(k_px**2 + k_py**2 + k_pz**2 + M_KAON**2)
+    E_o = np.sqrt(float(o_px)**2 + float(o_py)**2 + float(o_pz)**2 + M_OMEGA**2)
+    s = (E_k + E_o)**2 - (k_px + o_px)**2 - (k_py + o_py)**2 - (k_pz + o_pz)**2
+    kallen = (s - (M_KAON + M_OMEGA)**2) * (s - (M_KAON - M_OMEGA)**2)
+    return np.sqrt(np.maximum(kallen, 0.0)) / (2.0 * np.sqrt(np.maximum(s, 1e-10)))
+
+
+def compute_cos_theta_star(k_px, k_py, k_pz, o_px, o_py, o_pz):
+    """Beam-axis angle in the pair rest frame: cos(θ*) = k*_z / |k*|.
+    k*_z is the z-component of the kaon momentum after boosting to the kaon-Omega
+    pair rest frame. θ* is the angle between k* and the beam axis (z-hat).
+    Motivated by source elongation along z: R_long > R_out ~ R_side.
+    """
+    E_k = np.sqrt(k_px**2 + k_py**2 + k_pz**2 + M_KAON**2)
+    E_o = np.sqrt(float(o_px)**2 + float(o_py)**2 + float(o_pz)**2 + M_OMEGA**2)
+
+    # Pair 4-momentum
+    pair_E  = E_k + E_o
+    pair_px = k_px + float(o_px)
+    pair_py = k_py + float(o_py)
+    pair_pz = k_pz + float(o_pz)
+    pair_M  = np.sqrt(np.maximum(pair_E**2 - pair_px**2 - pair_py**2 - pair_pz**2, 1e-10))
+
+    # Boost vector β = p_pair / E_pair, γ = E_pair / M_pair
+    beta_x = pair_px / np.maximum(pair_E, 1e-10)
+    beta_y = pair_py / np.maximum(pair_E, 1e-10)
+    beta_z = pair_pz / np.maximum(pair_E, 1e-10)
+    beta2  = beta_x**2 + beta_y**2 + beta_z**2
+    gamma  = pair_E / pair_M
+
+    # Lorentz-boost kaon to pair rest frame: p* = p + [(γ−1)/β²](β·p)β − γβE
+    beta_dot_p = beta_x * k_px + beta_y * k_py + beta_z * k_pz
+    factor     = (gamma - 1.0) / np.maximum(beta2, 1e-10)
+    kstar_x = k_px + factor * beta_dot_p * beta_x - gamma * beta_x * E_k
+    kstar_y = k_py + factor * beta_dot_p * beta_y - gamma * beta_y * E_k
+    kstar_z = k_pz + factor * beta_dot_p * beta_z - gamma * beta_z * E_k
+
+    k_p_star = np.sqrt(kstar_x**2 + kstar_y**2 + kstar_z**2)
+    return np.clip(kstar_z / np.maximum(k_p_star, 1e-10), -1.0, 1.0)
+
+
+def compute_delta_y(k_px, k_py, k_pz, o_px, o_py, o_pz):
+    """Rapidity difference: y_kaon − y_Omega (boost-invariant, uses PDG masses)."""
+    E_k = np.sqrt(k_px**2 + k_py**2 + k_pz**2 + M_KAON**2)
+    E_o = np.sqrt(float(o_px)**2 + float(o_py)**2 + float(o_pz)**2 + M_OMEGA**2)
+    y_k = 0.5 * np.log(np.maximum(E_k + k_pz, 1e-10) / np.maximum(E_k - k_pz, 1e-10))
+    y_o = 0.5 * np.log(np.maximum(E_o + float(o_pz), 1e-10) / np.maximum(E_o - float(o_pz), 1e-10))
+    return y_k - y_o
+
 
 def run_balanced_preprocessing(input_file, output_file):
     print(f"Reading STAR TTree from {input_file}...")
@@ -15,13 +71,12 @@ def run_balanced_preprocessing(input_file, output_file):
             "kaon_px", "kaon_py", "kaon_pz", "kaon_charge"
         ], library="ak")
 
-    print("Building global momentum pools for balancing...")
+    print("Building global K⁻ momentum pool for balancing...")
     all_k_px = ak.to_numpy(ak.flatten(data["kaon_px"]))
     all_k_py = ak.to_numpy(ak.flatten(data["kaon_py"]))
     all_k_pz = ak.to_numpy(ak.flatten(data["kaon_pz"]))
     all_k_q = ak.to_numpy(ak.flatten(data["kaon_charge"]))
 
-    k_pos_pool = np.stack([all_k_px[all_k_q > 0], all_k_py[all_k_q > 0], all_k_pz[all_k_q > 0]], axis=1)
     k_neg_pool = np.stack([all_k_px[all_k_q < 0], all_k_py[all_k_q < 0], all_k_pz[all_k_q < 0]], axis=1)
 
     processed_graphs = []
@@ -36,27 +91,33 @@ def run_balanced_preprocessing(input_file, output_file):
         o_px, o_py, o_pz = data[i]["omega_px"], data[i]["omega_py"], data[i]["omega_pz"]
         o_charge = data[i]["omega_charge"]
 
-        n_pos, n_neg = np.sum(k_q > 0), np.sum(k_q < 0)
-        n_target = max(n_pos, n_neg)
-        if n_target == 0: continue
+        # Keep only opposite-sign kaons (the strangeness-balancing partners)
+        # Ω⁻ (o_charge < 0): opposite-sign = K⁺
+        # Ω̄⁺ (o_charge > 0): opposite-sign = K⁻
+        if o_charge < 0:
+            oppo_mask = k_q > 0
+        else:
+            oppo_mask = k_q < 0
 
-        # Balancing logic
-        added_px, added_py, added_pz, added_q = [], [], [], []
-        if n_neg < n_target:
-            idx = np.random.choice(len(k_neg_pool), size=n_target - n_neg, replace=True)
-            samples = k_neg_pool[idx]
-            added_px, added_py, added_pz, added_q = samples[:, 0], samples[:, 1], samples[:, 2], np.full(
-                n_target - n_neg, -1)
-        elif n_pos < n_target:
-            idx = np.random.choice(len(k_pos_pool), size=n_target - n_pos, replace=True)
-            samples = k_pos_pool[idx]
-            added_px, added_py, added_pz, added_q = samples[:, 0], samples[:, 1], samples[:, 2], np.full(
-                n_target - n_pos, 1)
+        n_pos = np.sum(k_q > 0)   # K⁺ count — target multiplicity (K⁺ > K⁻ globally)
+        if n_pos == 0: continue
 
-        f_px = np.concatenate([k_px, added_px])
-        f_py = np.concatenate([k_py, added_py])
-        f_pz = np.concatenate([k_pz, added_pz])
-        f_q = np.concatenate([k_q, added_q])
+        f_px = k_px[oppo_mask]
+        f_py = k_py[oppo_mask]
+        f_pz = k_pz[oppo_mask]
+        n_oppo = len(f_px)
+
+        # For Ω̄⁺ events: pad K⁻ to reach K⁺ count (or trim if K⁻ > K⁺, rare)
+        if o_charge > 0:
+            if n_oppo < n_pos:
+                idx = np.random.choice(len(k_neg_pool), size=n_pos - n_oppo, replace=True)
+                samples = k_neg_pool[idx]
+                f_px = np.concatenate([f_px, samples[:, 0]])
+                f_py = np.concatenate([f_py, samples[:, 1]])
+                f_pz = np.concatenate([f_pz, samples[:, 2]])
+            elif n_oppo > n_pos:
+                idx = np.random.choice(n_oppo, size=n_pos, replace=False)
+                f_px, f_py, f_pz = f_px[idx], f_py[idx], f_pz[idx]
 
         # --- COORDINATE TRANSFORMATION ---
         # 1. Omega Kinematics
@@ -71,20 +132,21 @@ def run_balanced_preprocessing(input_file, output_file):
         f_eta = np.arctanh(f_pz / f_p)
         f_phi = np.arctan2(f_py, f_px)
 
-        # 3. Relative Features (Delta Eta and Delta Phi)
-        d_ptx = f_px - o_px
-        d_pty = f_py - o_py
-        d_pt = np.sqrt(d_ptx ** 2 + d_pty ** 2)
-        d_eta = f_eta - o_eta
+        # 3. Relative Features
+        k_star       = compute_kstar(f_px, f_py, f_pz, o_px, o_py, o_pz)
+        cos_theta_st = compute_cos_theta_star(f_px, f_py, f_pz, o_px, o_py, o_pz)
+        d_y          = compute_delta_y(f_px, f_py, f_pz, o_px, o_py, o_pz)
         d_phi = f_phi - o_phi
 
         # Handle Phi wrapping (ensure value is between -pi and pi)
         d_phi = (d_phi + np.pi) % (2 * np.pi) - np.pi
 
-        # Node Features: [pT, d_pt, d_eta, d_phi, charge]
-        # f_q encoded as relative sign w.r.t. Omega: same-sign = +1, opposite-sign = -1
-        rel_q = f_q * np.sign(o_charge)
-        node_features = np.stack([f_pt, d_pt, d_eta, d_phi, rel_q], axis=1)
+        # Node Features: [f_pt, k_star, d_y, d_phi, o_pt, cos_theta_star]
+        # d_y replaces d_eta: physically correct Lorentz-invariant longitudinal separation.
+        # All kaons are opposite-sign (strangeness-balancing partners); rel_q dropped (constant).
+        # o_pt is broadcast: same value for all kaons in the event (global Omega context)
+        o_pt_broadcast = np.full(len(f_px), o_pt)
+        node_features = np.stack([f_pt, k_star, d_y, d_phi, o_pt_broadcast, cos_theta_st], axis=1)
 
         y_label = 1 if o_charge > 0 else 0
         processed_graphs.append({
@@ -103,7 +165,7 @@ def run_balanced_preprocessing(input_file, output_file):
     stats_file = output_file.replace(".pt", "_stats.pt")
     torch.save({'means': means, 'stds': stds}, stats_file)
     print(f"Feature stats saved to {stats_file}")
-    for name, m, s in zip(["f_pt", "d_pt", "d_eta", "d_phi", "f_q"], means, stds):
+    for name, m, s in zip(["f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star"], means, stds):
         print(f"  {name}: mean={m:.4f}, std={s:.4f}")
     print("Done!")
 

@@ -1,0 +1,40 @@
+/mnt/d/Research/Strangeness_GAT/venv/lib/python3.10/site-packages/torch/nn/modules/transformer.py:385: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  warnings.warn(
+
+============================================================
+Analysis 1: Attention
+============================================================
+  Events — Omega: 20827, Anti: 9940
+
+  Feature    Attn-wtd Omega   Attn-wtd Anti      Diff
+  -------------------------------------------------------
+  f_pt               0.6488          0.6012   -0.0477
+  k_star             0.8871          0.8824   -0.0047
+  d_eta              0.3419          0.3750   +0.0331
+  d_phi             -0.0058         -0.0053   +0.0005
+  o_pt               1.7797          1.8359   +0.0563
+
+  Feature    Top-kaon Omega   Top-kaon Anti      Diff
+  -------------------------------------------------------
+  f_pt               0.6940          0.6435   -0.0505
+  k_star             0.9345          0.9282   -0.0063
+  d_eta              0.8329          0.9032   +0.0703
+  d_phi             -0.1219         -0.1082   +0.0136
+  o_pt               1.7797          1.8359   +0.0563
+
+  Saved plots/attention_analysis.png
+
+============================================================
+Analysis 2: Feature Permutation Importance
+============================================================
+  Baseline score: -0.2832  (optimal threshold t=0.832)
+
+  Feature    Mean drop       Std   Relative %
+  ---------------------------------------------
+  f_pt         +0.0291    0.0013         0.0%
+  k_star       +0.0378    0.0011         0.0%
+  d_eta        +0.0399    0.0000         0.0%
+  d_phi        +0.0058    0.0009         0.0%
+  o_pt         +0.0092    0.0008         0.0%
+
+  Saved plots/feature_importance.png
