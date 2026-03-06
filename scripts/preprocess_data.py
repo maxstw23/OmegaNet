@@ -135,14 +135,13 @@ def run_balanced_preprocessing(input_file, output_file):
         # 3. Relative Features
         k_star       = compute_kstar(f_px, f_py, f_pz, o_px, o_py, o_pz)
         cos_theta_st = compute_cos_theta_star(f_px, f_py, f_pz, o_px, o_py, o_pz)
-        d_y          = compute_delta_y(f_px, f_py, f_pz, o_px, o_py, o_pz)
-        d_phi = f_phi - o_phi
-
-        # Handle Phi wrapping (ensure value is between -pi and pi)
-        d_phi = (d_phi + np.pi) % (2 * np.pi) - np.pi
+        # |d_y|: absolute rapidity difference — Au+Au is forward-backward symmetric
+        d_y  = np.abs(compute_delta_y(f_px, f_py, f_pz, o_px, o_py, o_pz))
+        # |d_phi|: absolute azimuthal separation in [0, π] — no preferred azimuthal direction
+        d_phi = np.abs(((f_phi - o_phi) + np.pi) % (2 * np.pi) - np.pi)
 
         # Node Features: [f_pt, k_star, d_y, d_phi, o_pt, cos_theta_star]
-        # d_y replaces d_eta: physically correct Lorentz-invariant longitudinal separation.
+        # d_y = |y_K - y_Omega|, d_phi = |phi_K - phi_Omega|: absolute separations (Au+Au symmetric)
         # All kaons are opposite-sign (strangeness-balancing partners); rel_q dropped (constant).
         # o_pt is broadcast: same value for all kaons in the event (global Omega context)
         o_pt_broadcast = np.full(len(f_px), o_pt)

@@ -40,15 +40,17 @@ def evaluate():
     model.eval()
 
     stats = torch.load(config.STATS_PATH)
-    feature_means = stats['means']
-    feature_stds = stats['stds']
+    feature_means = stats['means'][config.FEATURE_IDX]
+    feature_stds = stats['stds'][config.FEATURE_IDX]
 
     raw_data = torch.load(config.DATA_PATH)
     dataset = []
     print("Preparing evaluation dataset...")
     for entry in tqdm(raw_data):
         x, y = entry['x'], entry['y']
-        x[:, 1] = torch.clamp(x[:, 1], max=config.KSTAR_CLIP)
+        x = x[:, config.FEATURE_IDX]
+        if config.KSTAR_IDX is not None:
+            x[:, config.KSTAR_IDX] = torch.clamp(x[:, config.KSTAR_IDX], max=config.KSTAR_CLIP)
         x = (x - feature_means) / feature_stds
         dataset.append((x, y.squeeze().long()))
 

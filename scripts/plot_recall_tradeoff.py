@@ -45,13 +45,17 @@ def main():
     model.eval()
 
     stats = torch.load(config.STATS_PATH)
+    feat_means = stats['means'][config.FEATURE_IDX]
+    feat_stds  = stats['stds'][config.FEATURE_IDX]
     raw_data = torch.load(config.DATA_PATH)
 
     dataset = []
     for entry in raw_data:
         x, y = entry['x'], entry['y']
-        x[:, 1] = torch.clamp(x[:, 1], max=config.KSTAR_CLIP)
-        x = (x - stats['means']) / stats['stds']
+        x = x[:, config.FEATURE_IDX]
+        if config.KSTAR_IDX is not None:
+            x[:, config.KSTAR_IDX] = torch.clamp(x[:, config.KSTAR_IDX], max=config.KSTAR_CLIP)
+        x = (x - feat_means) / feat_stds
         dataset.append((x, y.squeeze().long()))
 
     random.seed(42)

@@ -12,8 +12,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import config
 
+import config
 OUT_PATH = "plots/data_exploration.png"
-FEATURE_NAMES = ["f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star"]
+# Always use all features in canonical order (explore_data reads raw unfiltered data)
+FEATURE_NAMES = config.FEATURE_REGISTRY
 
 
 def load_split_by_class(data_path):
@@ -120,8 +122,8 @@ def main():
     feat_ranges = {
         'f_pt':   (0, 3.5, 60),
         'k_star': (0, 4.0, 60),
-        'd_eta':  (-3, 3, 60),
-        'd_phi':  (-np.pi, np.pi, 60),
+        '|d_y|':  (0, 3.0, 60),
+        '|d_phi|':(0, np.pi, 60),
         'o_pt':   (0, 3.5, 60),
     }
     for i, (name, (lo, hi, nb)) in enumerate(feat_ranges.items()):

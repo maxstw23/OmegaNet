@@ -69,8 +69,8 @@ def run_training():
             f.write(msg + '\n')
 
     stats = torch.load(config.STATS_PATH)
-    feature_means = stats['means']
-    feature_stds = stats['stds']
+    feature_means = stats['means'][config.FEATURE_IDX]
+    feature_stds = stats['stds'][config.FEATURE_IDX]
 
     raw_data = torch.load(config.DATA_PATH)
     dataset = []
@@ -82,7 +82,9 @@ def run_training():
         target = y.squeeze().long()
         labels.append(target.item())
 
-        x[:, 1] = torch.clamp(x[:, 1], max=config.KSTAR_CLIP)
+        x = x[:, config.FEATURE_IDX]
+        if config.KSTAR_IDX is not None:
+            x[:, config.KSTAR_IDX] = torch.clamp(x[:, config.KSTAR_IDX], max=config.KSTAR_CLIP)
         x = (x - feature_means) / feature_stds
 
         dataset.append((x, target))
@@ -92,7 +94,7 @@ def run_training():
     n_a = (labels_t == 1).sum().item()
 
     ANTI_WEIGHT = 2.0
-    log(f"Run {run_number} | IN_CHANNELS={config.IN_CHANNELS} | D_MODEL={config.D_MODEL}")
+    log(f"Run {run_number} | features={config.FEATURE_NAMES} | IN_CHANNELS={config.IN_CHANNELS} | D_MODEL={config.D_MODEL}")
     log(f"Dataset: {n_o} Omega, {n_a} Anti-Omega")
     log(f"Loss: per-class-mean BCE, anti_weight={ANTI_WEIGHT}, label_smooth_eps={LABEL_SMOOTH_EPS}")
     log(f"EMA decay: {EMA_DECAY}")

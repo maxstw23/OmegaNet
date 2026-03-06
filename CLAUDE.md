@@ -23,21 +23,22 @@ Current model: **OmegaTransformer** (`models/transformer_model.py`)
 - Checkpoint: `models/omega_transformer.pth`
 
 Config (`config.py`):
-- `IN_CHANNELS = 6` — feature dimension per kaon
+- `IN_CHANNELS = 5` — derived from `len(FEATURE_NAMES)`; edit only `FEATURE_NAMES` to change features
 - `D_MODEL = 128`, `NHEAD = 4`, `NUM_LAYERS = 2`, `DIM_FEEDFORWARD = 256`
 - `KSTAR_CLIP = 8.0` — applied to k* (feature index 1) before normalisation
 
 ## Features
 
-Six features per kaon, computed in `scripts/preprocess_data.py`:
+Six features per kaon stored in `data/balanced_omega_anti.pt` (canonical order = `FEATURE_REGISTRY`).
+Active set controlled by `FEATURE_NAMES` in `config.py` (currently 5 features; `o_pt` excluded).
 
 | Index | Name | Description |
 |---|---|---|
 | 0 | `f_pt` | Kaon transverse momentum [GeV/c], capped at 2 GeV/c |
 | 1 | `k_star` | Lorentz-invariant relative momentum in kaon-Ω pair rest frame [GeV/c] |
-| 2 | `d_y` | y_kaon − y_Omega (true rapidity difference, boost-invariant, uses PDG masses) |
-| 3 | `d_phi` | φ_kaon − φ_Omega, wrapped to [−π, π] |
-| 4 | `o_pt` | Omega transverse momentum [GeV/c] — broadcast (same for all kaons in event) |
+| 2 | `d_y` | \|y_kaon − y_Omega\| — absolute rapidity separation (Au+Au is fwd-bkwd symmetric) |
+| 3 | `d_phi` | \|φ_kaon − φ_Omega\| in [0, π] — absolute azimuthal separation (no preferred direction) |
+| 4 | `o_pt` | Omega pT [GeV/c], broadcast — **excluded** (p̄ absorption biases Ω̄⁺ reconstruction) |
 | 5 | `cos_theta_star` | cos(θ*) = k*_z / \|k*\| — beam-axis angle in pair rest frame (source elongation probe) |
 
 k* uses PDG masses: m_K = 0.493677 GeV/c², m_Ω = 1.67245 GeV/c².

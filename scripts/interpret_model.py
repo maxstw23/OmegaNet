@@ -16,8 +16,17 @@ from torch.utils.data import DataLoader
 import config
 from transformer_model import OmegaTransformer
 
-FEATURE_NAMES = ["f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star"]
 N_PERM_REPEATS = 15
+
+# Plot axis limits per feature (used in attention analysis histograms)
+_FEAT_LIMS = {
+    "f_pt":           (0.0, 2.5),
+    "k_star":         (0.0, 3.5),
+    "d_y":            (0.0, 2.5),   # now |d_y|
+    "d_phi":          (0.0, 3.2),   # now |d_phi|
+    "o_pt":           (0.0, 3.5),
+    "cos_theta_star": (-1.0, 1.0),
+}
 
 
 # ── Shared utilities ──────────────────────────────────────────────────────────
@@ -37,17 +46,21 @@ def collate_fn(batch):
 
 def load_val_set():
     stats = torch.load(config.STATS_PATH)
+    feat_means = stats['means'][config.FEATURE_IDX]
+    feat_stds  = stats['stds'][config.FEATURE_IDX]
     raw_data = torch.load(config.DATA_PATH)
     dataset = []
     for entry in raw_data:
         x, y = entry['x'], entry['y']
-        x[:, 1] = torch.clamp(x[:, 1], max=config.KSTAR_CLIP)
-        x = (x - stats['means']) / stats['stds']
+        x = x[:, config.FEATURE_IDX]
+        if config.KSTAR_IDX is not None:
+            x[:, config.KSTAR_IDX] = torch.clamp(x[:, config.KSTAR_IDX], max=config.KSTAR_CLIP)
+        x = (x - feat_means) / feat_stds
         dataset.append((x, y.squeeze().long()))
     random.seed(42)
     random.shuffle(dataset)
     split = int(0.8 * len(dataset))
-    return dataset[split:], stats
+    return dataset[split:], {'means': feat_means, 'stds': feat_stds}
 
 
 def load_model():
@@ -118,8 +131,8 @@ def best_threshold_score(p_anti, labels):
     best_s, best_t = -1.0, 0.5
     for t in np.linspace(0.01, 0.99, 200):
         preds = (p_anti >= t).long()
-        o_r = ((preds == 0) & is_omega).float().mean().item()
-        a_r = ((preds == 1) & is_anti).float().mean().item()
+        o_r = ((preds == 0) & is_omega).sum().item() / is_omega.sum().item()
+        a_r = ((preds == 1) & is_anti).sum().item() / is_anti.sum().item()
         s = o_r + a_r - 1.0
         if s > best_s:
             best_s, best_t = s, t
@@ -133,8 +146,8 @@ def run_attention_analysis(model, val_set, stats):
     print("Analysis 1: Attention")
     print("="*60)
 
-    means = stats['means'].cpu().numpy()
-    stds  = stats['stds'].cpu().numpy()
+    means = stats['means'].numpy()
+    stds  = stats['stds'].numpy()
 
     loader = DataLoader(val_set, batch_size=64, collate_fn=collate_fn)
 
@@ -186,25 +199,26 @@ def run_attention_analysis(model, val_set, stats):
     a_top = top_kaon_feats(anti_records)
 
     # ── Numerical summary ────────────────────────────────────────────────────
-    print(f"\n  {'Feature':<8}  {'Attn-wtd Omega':>15}  {'Attn-wtd Anti':>14}  {'Diff':>8}")
-    print("  " + "-"*55)
-    for fi, name in enumerate(FEATURE_NAMES):
+    print(f"\n  {'Feature':<16}  {'Attn-wtd Omega':>15}  {'Attn-wtd Anti':>14}  {'Diff':>8}")
+    print("  " + "-"*60)
+    for fi, name in enumerate(config.FEATURE_NAMES):
         om, am = o_aw[:, fi].mean(), a_aw[:, fi].mean()
-        print(f"  {name:<8}  {om:>15.4f}  {am:>14.4f}  {am-om:>+8.4f}")
+        print(f"  {name:<16}  {om:>15.4f}  {am:>14.4f}  {am-om:>+8.4f}")
 
-    print(f"\n  {'Feature':<8}  {'Top-kaon Omega':>15}  {'Top-kaon Anti':>14}  {'Diff':>8}")
-    print("  " + "-"*55)
-    for fi, name in enumerate(FEATURE_NAMES):
+    print(f"\n  {'Feature':<16}  {'Top-kaon Omega':>15}  {'Top-kaon Anti':>14}  {'Diff':>8}")
+    print("  " + "-"*60)
+    for fi, name in enumerate(config.FEATURE_NAMES):
         om, am = o_top[:, fi].mean(), a_top[:, fi].mean()
-        print(f"  {name:<8}  {om:>15.4f}  {am:>14.4f}  {am-om:>+8.4f}")
+        print(f"  {name:<16}  {om:>15.4f}  {am:>14.4f}  {am-om:>+8.4f}")
 
     # ── Plot ─────────────────────────────────────────────────────────────────
-    feat_lims = [(0.0, 2.5), (0.0, 3.5), (-2.5, 2.5), (-3.2, 3.2), (-1.5, 1.5), (0.5, 3.5)]
-    fig, axes = plt.subplots(2, 6, figsize=(22, 7))
+    feat_lims = [_FEAT_LIMS.get(f, (-3.0, 3.0)) for f in config.FEATURE_NAMES]
+    n_feat = len(config.FEATURE_NAMES)
+    fig, axes = plt.subplots(2, n_feat, figsize=(4 * n_feat + 2, 7))
     fig.suptitle("Attention Analysis  |  top row: attn-weighted feature / event  |  "
                  "bottom row: most-attended kaon feature / event", fontsize=10)
 
-    for fi, (name, (lo, hi)) in enumerate(zip(FEATURE_NAMES, feat_lims)):
+    for fi, (name, (lo, hi)) in enumerate(zip(config.FEATURE_NAMES, feat_lims)):
         bins = np.linspace(lo, hi, 50)
         for row, (o_arr, a_arr, subtitle) in enumerate([
             (o_aw[:, fi],  a_aw[:, fi],  f"Attn-wtd {name}"),
@@ -255,7 +269,7 @@ def run_permutation_importance(model, val_set, n_repeats=N_PERM_REPEATS):
     print("  " + "-"*45)
 
     importance = {}
-    for fi, fname in enumerate(FEATURE_NAMES):
+    for fi, fname in enumerate(config.FEATURE_NAMES):
         drops = []
         for _ in range(n_repeats):
             perm_set   = permute_feature_globally(val_set, fi)

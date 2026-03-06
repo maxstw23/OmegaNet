@@ -19,8 +19,21 @@ HIDDEN_CHANNELS = 64
 
 KSTAR_CLIP = 8.0
 
+# ── Feature configuration ──────────────────────────────────────────────────────
+# All features produced by preprocess_data.py in canonical order.
+# TODO: add "phi_omega_minus_psi_ep" (event plane angle) once ROOT file is updated.
+FEATURE_REGISTRY = ["f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star"]
+
+# Active features for this run — edit ONLY this list to change the feature set.
+# o_pt excluded: p̄ absorption asymmetry biases Ω̄⁺ reconstruction efficiency.
+FEATURE_NAMES = ["f_pt", "k_star", "d_y", "d_phi", "cos_theta_star"]
+
+# Derived — do not edit manually.
+FEATURE_IDX = [FEATURE_REGISTRY.index(f) for f in FEATURE_NAMES]
+IN_CHANNELS = len(FEATURE_NAMES)
+KSTAR_IDX   = FEATURE_NAMES.index("k_star") if "k_star" in FEATURE_NAMES else None
+
 # Transformer Hyperparameters
-IN_CHANNELS = 6        # [f_pt, k_star, d_y, d_phi, o_pt, cos_theta_star]
 D_MODEL = 128
 NHEAD = 4              # head_dim = 32
 NUM_LAYERS = 2
