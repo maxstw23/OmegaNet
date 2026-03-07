@@ -17,6 +17,7 @@ This project uses ML to study Omega hyperon production in heavy-ion collisions a
 - **Future-proof by design**: When writing or refactoring code, prefer patterns that will remain correct as features, scripts, or hyperparameters evolve. Avoid magic numbers, hardcoded feature counts, or duplicate constants across files.
 - **Keep docs current**: After any significant change (new feature, architecture update, training result, bug fix, new script), update the relevant markdown file (`CLAUDE.md`, `pipeline.md`, `method.md`, `physics.md`, `interpretation.md`, or `data_exploration.md`). The docs are the single source of truth for the project state.
 - **Commit at natural checkpoints**: After completing a meaningful unit of work (new feature, bug fix, doc update, successful training run), create a git commit. Don't wait until the end of a long session — small, focused commits make history readable and rollbacks safe.
+- **Be frugal with tokens**: Before running any expensive operation (training, large script execution, extensive searches), pause to plan ways to reduce token usage. Batch related reads/edits, avoid re-reading files, use targeted searches instead of broad exploration. Token efficiency is a real constraint — optimize before executing.
 
 ## Environment
 
