@@ -45,11 +45,12 @@ K+/K- asymmetry means that Ω⁻ events tend to have more opposite-sign kaons th
 kaons, while Ω̄⁺ events are closer to balance. A model could exploit this multiplicity
 difference to infer the baryon sign without using any spatial or momentum information.
 
-To resolve this, **kaon multiplicity is force-matched**: for each event, additional kaons of
-the minority relative-sign are embedded by sampling from the global kaon momentum spectrum
-until the number of same-sign and opposite-sign kaons are equal. The embedded kaons carry no
-kinematic correlation with the Omega, ensuring that any signal the model learns must come from
-the genuine spatial or momentum structure of real associated kaons.
+To resolve this, **kaon multiplicity is force-matched**: for each Ω̄⁺ event, additional K⁻ are
+sampled until the K⁻ count equals the K⁺ count. Fake K⁻ are drawn from an **event-mixed pool**
+built from other Ω̄⁺ events with similar Omega kinematics, binned on (|y_Ω|, pT_Ω) quartiles
+(4×4 = 16 bins). This ensures fake kaons have realistic kinematic relationships to the Omega
+they are paired with — a global pool was found to produce pathological d_y_signed values that
+the model exploited as a padding artifact.
 
 ## Loss Function
 
@@ -82,14 +83,14 @@ model should produce a discriminating score p(x):
 | Pair-produced Ω⁻ | p(x) concentrated near 1 (same mechanism) |
 | BN-carrying Ω⁻ | p(x) concentrated near 0 (different mechanism) |
 
-The Omega score distribution will be a **mixture** of the two components. A threshold sweep
-identifies the operating point that maximises separation quality.
+The Omega score distribution will be a **mixture** of the two components. The operating point
+is fixed at **Anti recall = 0.90** (O@A=0.90); Omega recall at this threshold is the primary
+training metric.
 
 **Primary downstream use**: Apply the trained model to the Ω⁻ sample and use p(x) as a
 soft mechanism label. Profile kinematic observables (k*, Δy, cos θ*, flow angles, p_T) as a
 function of p(x) to characterise how BN-carrying Omegas differ from pair-produced ones.
 This provides the first data-driven, event-by-event handle on the junction production mechanism.
 
-**Recall metrics are diagnostics, not the measurement**: Anti recall and Omega recall at a
-chosen threshold are used to assess separation quality, but the physics output is the
+**Recall metrics are diagnostics, not the measurement**: The physics output is the
 differential kinematic profile, not a single number like f_BN.
