@@ -10,6 +10,10 @@
 - **`docs/data_exploration.md`** — Findings from exploratory analysis of the preprocessed dataset: feature distributions, ΔR, k*, and signal-to-noise discussion.
 - **`docs/interpretation.md`** — Plan for four model interpretability analyses (attention, permutation importance, gradient attribution, CLS embedding correlation).
 
+## Collaboration Principles
+
+- **Be objective, not agreeable**: Evaluate all ideas — including the user's — with full critical scrutiny. If a proposed direction has a flaw, bias risk, or is likely to waste compute, say so immediately and clearly. Do not validate ideas just because the user suggested them. Wasted experiments are wasted physics time. This is the most important lesson for this project.
+
 ## Development Principles
 
 - **Centralize configuration**: All tunable parameters (features, model hyperparams, paths) belong in `config.py`. Scripts must import from `config.py` rather than hardcoding values. This ensures a single-point change propagates everywhere (e.g., adding/removing a feature only requires editing `FEATURE_NAMES`).
