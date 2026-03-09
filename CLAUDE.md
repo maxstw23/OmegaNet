@@ -9,6 +9,7 @@
 - **`docs/pipeline.md`** — How to run the project end-to-end: preprocessing, inspection, training, and evaluation.
 - **`docs/data_exploration.md`** — Findings from exploratory analysis of the preprocessed dataset: feature distributions, ΔR, k*, and signal-to-noise discussion.
 - **`docs/interpretation.md`** — Plan for four model interpretability analyses (attention, permutation importance, gradient attribution, CLS embedding correlation).
+- **`docs/lessons.md`** — Hard-won rules that must not be forgotten. Read this before reporting any result.
 
 ## Collaboration Principles
 
@@ -59,8 +60,6 @@ Active set controlled by `FEATURE_NAMES` in `config.py` (currently 9 features; `
 | 8 | `f_cos_psi1` | cos(φ_K − Ψ₁) — kaon v₁ alignment with EPD 1st-order event plane, per-kaon |
 | 9 | `f_cos2_psi2` | cos(2(φ_K − Ψ₂)) — kaon v₂ alignment with EPD 2nd-order event plane, per-kaon |
 | 10 | `o_y_abs` | \|y_Omega\| — Omega's displacement from midrapidity [rapidity units], broadcast; **unpadded dataset only** |
-
-**Unpadded dataset** (`data/unpadded_omega_anti.pt`): 11 features per kaon; no K⁻ padding, preserving the natural n_kaons(Ω⁻) > n_kaons(Ω̄⁺) asymmetry. Feature 2 stores d_y_signed = \|y_K\| − \|y_Ω\|: negative means kaon is closer to midrapidity than the Omega (expected for junction string fragmentation, regardless of which side of y=0 the kaon lands); near zero or positive for pair-produced. Feature 10 is \|y_Omega\|, larger for junction Ω⁻ (beam-remnant origin).
 
 k* uses PDG masses: m_K = 0.493677 GeV/c², m_Ω = 1.67245 GeV/c².
 Feature means/stds are auto-computed by preprocessing and saved to `data/balanced_omega_anti_stats.pt`.
