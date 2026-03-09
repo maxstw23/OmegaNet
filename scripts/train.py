@@ -36,11 +36,15 @@ def omega_rec_at_anti_target(p_scores, is_anti, is_omega, target=0.90):
 # ── Optional CLI feature override ─────────────────────────────────────────────
 def _parse_args():
     parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--data", choices=["padded", "unpadded"], default="padded")
     parser.add_argument("--features", type=str, default=None,
                         help="Comma-separated feature names to override config.FEATURE_NAMES")
     parser.add_argument("--target-anti-rec", type=float, default=0.90,
                         help="Anti recall target for operating-point metric (default: 0.90)")
     args, _ = parser.parse_known_args()
+    if args.data == "unpadded":
+        config.DATA_PATH  = config.DATA_PATH_UNPADDED
+        config.STATS_PATH = config.STATS_PATH_UNPADDED
     if args.features:
         names = [f.strip() for f in args.features.split(",")]
         config.FEATURE_NAMES = names

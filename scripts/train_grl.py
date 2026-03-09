@@ -41,9 +41,21 @@ from tqdm import tqdm
 GRL_ALPHA_MAX    = 1.0    # max GRL reversal strength
 GRL_WARMUP_EPOCHS = 30    # epochs to ramp alpha from 0 → GRL_ALPHA_MAX
 ADV_LAMBDA       = 0.1    # weight of adversary loss
-CHECKPOINT_THRESHOLD = 0.55
 EMA_DECAY        = 0.999
 GRL_SAVE_PATH    = "models/omega_grl.pth"
+
+
+def omega_rec_at_anti_target(p_scores, is_anti, is_omega, target=0.90):
+    """Omega recall at the threshold where Anti recall is closest to target."""
+    thresholds = torch.linspace(0.01, 0.99, 980)
+    best_t, best_diff = thresholds[0], float('inf')
+    for t in thresholds:
+        diff = abs((p_scores[is_anti] >= t).float().mean().item() - target)
+        if diff < best_diff:
+            best_diff, best_t = diff, t
+    t = best_t.item()
+    return (p_scores[is_omega] < t).float().mean().item(), \
+           (p_scores[is_anti] >= t).float().mean().item(), t
 
 
 def get_next_run_number(prefix="grl_run"):
@@ -136,7 +148,7 @@ def run_training(args):
     n_o = (labels_t == 0).sum().item()
     n_a = (labels_t == 1).sum().item()
 
-    log(f"GRL Run {run_number} | features={config.FEATURE_NAMES} | IN_CHANNELS={config.IN_CHANNELS}")
+    log(f"GRL Run {run_number} | features={config.FEATURE_NAMES} | IN_CHANNELS={config.IN_CHANNELS} | target Anti recall={target_anti_rec:.2f}")
     log(f"Dataset: {n_o} Omega, {n_a} Anti-Omega")
     log(f"ADV_LAMBDA={ADV_LAMBDA} | GRL_ALPHA_MAX={GRL_ALPHA_MAX} | warmup={GRL_WARMUP_EPOCHS} epochs")
 
@@ -170,9 +182,8 @@ def run_training(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=config.LEARNING_RATE, weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5)
 
-    best_score = -1.0
-    best_anti_rec = -1.0
-    best_a_rec_055 = -1.0
+    target_anti_rec = args.target_anti_rec
+    best_o_rec_at_target = -1.0
     epochs_no_improvement = 0
 
     log("Starting GRL training...\n")
@@ -229,30 +240,30 @@ def run_training(args):
         is_omega   = (labels_val == 0)
         is_anti    = (labels_val == 1)
 
-        preds_argmax = (p_anti >= 0.5).long()
-        o_rec = ((preds_argmax == 0) & is_omega).sum().item() / is_omega.sum().item()
-        a_rec = ((preds_argmax == 1) & is_anti).sum().item()  / is_anti.sum().item()
+        o_rec_at_t, a_rec_at_t, t_target = omega_rec_at_anti_target(
+            p_anti, is_anti, is_omega, target=target_anti_rec
+        )
+
+        # Argmax score for reference
+        preds = (p_anti >= 0.5).long()
+        o_rec = ((preds == 0) & is_omega).sum().item() / is_omega.sum().item()
+        a_rec = ((preds == 1) & is_anti).sum().item()  / is_anti.sum().item()
         score = o_rec + a_rec - 1.0
 
-        preds_055  = (p_anti >= CHECKPOINT_THRESHOLD).long()
-        a_rec_055  = ((preds_055 == 1) & is_anti).sum().item() / is_anti.sum().item()
-
-        scheduler.step(score)
+        scheduler.step(o_rec_at_t)
 
         line = (
             f"Epoch {epoch:03d} | α={alpha:.3f} | "
             f"cls={epoch_cls_loss/n_steps:.4f} adv={epoch_adv_loss/n_steps:.4f} | "
-            f"Omega Rec: {o_rec:.3f} | Anti Rec: {a_rec:.3f} | "
-            f"A@{CHECKPOINT_THRESHOLD:.2f}: {a_rec_055:.3f} | Score: {score:.4f} | "
+            f"O@A={target_anti_rec:.2f}: {o_rec_at_t:.3f} (t={t_target:.2f}, A={a_rec_at_t:.3f}) | "
+            f"Argmax: O={o_rec:.3f} A={a_rec:.3f} Score={score:.4f} | "
             f"LR: {optimizer.param_groups[0]['lr']:.6f} | "
             f"No-improve: {epochs_no_improvement}/{config.EARLY_STOP_PATIENCE}"
         )
         log(line)
 
-        if score > best_score:
-            best_score    = score
-            best_anti_rec = a_rec
-            best_a_rec_055 = a_rec_055
+        if o_rec_at_t > best_o_rec_at_target:
+            best_o_rec_at_target = o_rec_at_t
             epochs_no_improvement = 0
             torch.save(ema_model.state_dict(), GRL_SAVE_PATH)
         else:
@@ -262,11 +273,7 @@ def run_training(args):
             log(f"\nEarly stopping: no improvement for {config.EARLY_STOP_PATIENCE} epochs.")
             break
 
-    summary = (
-        f"\nBest Score: {best_score:.4f} | Anti (argmax): {best_anti_rec:.4f} | "
-        f"A@{CHECKPOINT_THRESHOLD:.2f}: {best_a_rec_055:.4f}  →  saved to {GRL_SAVE_PATH}"
-    )
-    log(summary)
+    log(f"\nBest Omega recall @ Anti={target_anti_rec:.2f}: {best_o_rec_at_target:.4f}  →  saved to {GRL_SAVE_PATH}")
     log(f"Log saved to {log_path}")
 
 
@@ -276,4 +283,6 @@ if __name__ == "__main__":
                         help="padded: balanced dataset (default); unpadded: no K⁻ padding, directed rapidity features")
     parser.add_argument("--features", type=str, default=None,
                         help="Comma-separated feature names from FEATURE_REGISTRY (overrides config.FEATURE_NAMES)")
+    parser.add_argument("--target-anti-rec", type=float, default=0.90,
+                        help="Anti recall target for operating-point metric (default: 0.90)")
     run_training(parser.parse_args())
