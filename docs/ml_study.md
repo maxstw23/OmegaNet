@@ -216,10 +216,14 @@ observables do not carry enough information to separate the two mechanisms more 
    the sign, discarding per-event information that is physically meaningful for the junction
    hypothesis. Junction-transported Ω⁻ originate from the beam remnant at large |y_Omega|;
    their associated kaons come from string fragmentation *between* the Omega and midrapidity,
-   and should be preferentially at **smaller |y|** than the Omega. Encoding this as
-   d_y_signed = sign(y_Omega) × (y_K − y_Omega) directly probes the string topology:
-   - **Negative** → kaon is on the midrapidity side of the Omega (expected for junction)
-   - **Near zero** → symmetric (expected for pair-produced)
+   and should be preferentially at **smaller |y|** than the Omega. The correct encoding is
+   d_y_signed = |y_K| − |y_Ω|, which directly measures whether the kaon is closer to
+   midrapidity than the Omega, regardless of whether y_K and y_Ω have the same sign:
+   - **Negative** → |y_K| < |y_Ω|: kaon closer to midrapidity than Omega (expected for junction)
+   - **Near zero / positive** → symmetric or kaon further out (expected for pair-produced)
+
+   (The naïve sign(y_Ω)×(y_K−y_Ω) is wrong: it gives a false negative when the kaon
+   crosses y=0 to the other side of midrapidity but is actually further from midrapidity.)
 
    A new broadcast feature **|y_Omega|** is also added: junction Ω⁻ from beam stopping should
    be displaced further from midrapidity than thermally pair-produced Ω̄⁺.
@@ -229,7 +233,7 @@ observables do not carry enough information to separate the two mechanisms more 
 plus index 10 = o_y_abs). Training with `scripts/train_grl.py --data unpadded`.
 
 **Expected signals** (if junction-string hypothesis holds):
-- d_y_signed mean < 0 for the BN-transport Ω⁻ sub-population
+- d_y_signed (= |y_K| − |y_Ω|) mean < 0 for the BN-transport Ω⁻ sub-population
 - |y_Omega| larger for BN-transport Ω⁻ than for Ω̄⁺
 - GRL adversary loss should start high and decrease (genuine bias being removed)
 - Score improvement if directed rapidity encodes mechanism information

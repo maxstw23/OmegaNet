@@ -46,7 +46,7 @@ Active set controlled by `FEATURE_NAMES` in `config.py` (currently 9 features; `
 |---|---|---|
 | 0 | `f_pt` | Kaon transverse momentum [GeV/c], capped at 2 GeV/c |
 | 1 | `k_star` | Lorentz-invariant relative momentum in kaon-Ω pair rest frame [GeV/c] |
-| 2 | `d_y` | \|y_kaon − y_Omega\| — absolute rapidity separation (padded); **d_y_signed = sign(y_Ω)×(y_K−y_Ω)** in unpadded |
+| 2 | `d_y` | \|y_kaon − y_Omega\| — absolute rapidity separation (padded); **d_y_signed = \|y_K\|−\|y_Ω\|** in unpadded |
 | 3 | `d_phi` | \|φ_kaon − φ_Omega\| in [0, π] — absolute azimuthal separation (no preferred direction) |
 | 4 | `o_pt` | Omega pT [GeV/c], broadcast — **excluded** (p̄ absorption biases Ω̄⁺ reconstruction) |
 | 5 | `cos_theta_star` | cos(θ*) = k*_z / \|k*\| — beam-axis angle in pair rest frame (source elongation probe) |
@@ -56,7 +56,7 @@ Active set controlled by `FEATURE_NAMES` in `config.py` (currently 9 features; `
 | 9 | `f_cos2_psi2` | cos(2(φ_K − Ψ₂)) — kaon v₂ alignment with EPD 2nd-order event plane, per-kaon |
 | 10 | `o_y_abs` | \|y_Omega\| — Omega's displacement from midrapidity [rapidity units], broadcast; **unpadded dataset only** |
 
-**Unpadded dataset** (`data/unpadded_omega_anti.pt`): 11 features per kaon; no K⁻ padding, preserving the natural n_kaons(Ω⁻) > n_kaons(Ω̄⁺) asymmetry. Feature 2 stores the directed rapidity gap d_y_signed: negative means kaon is on the midrapidity side of the Omega (expected for junction-transport Ω⁻); near zero for pair-produced. Feature 10 is \|y_Omega\|, larger for junction Ω⁻ (beam-remnant origin).
+**Unpadded dataset** (`data/unpadded_omega_anti.pt`): 11 features per kaon; no K⁻ padding, preserving the natural n_kaons(Ω⁻) > n_kaons(Ω̄⁺) asymmetry. Feature 2 stores d_y_signed = \|y_K\| − \|y_Ω\|: negative means kaon is closer to midrapidity than the Omega (expected for junction string fragmentation, regardless of which side of y=0 the kaon lands); near zero or positive for pair-produced. Feature 10 is \|y_Omega\|, larger for junction Ω⁻ (beam-remnant origin).
 
 k* uses PDG masses: m_K = 0.493677 GeV/c², m_Ω = 1.67245 GeV/c².
 Feature means/stds are auto-computed by preprocessing and saved to `data/balanced_omega_anti_stats.pt`.

@@ -205,9 +205,10 @@ def run_unpadded_preprocessing(input_file, output_file):
     genuine K⁺/K⁻ asymmetry so a GRL adversary can do real work removing it.
 
     Feature differences vs balanced:
-      index 2 — d_y_signed = sign(y_Omega) × (y_K − y_Omega)  [directed rapidity gap;
-                 negative means kaon is on the midrapidity side of the Omega, as expected
-                 for junction-transport; near zero for pair-produced]
+      index 2 — d_y_signed = |y_K| − |y_Omega|  [midrapidity proximity gap;
+                 negative means kaon is closer to midrapidity than the Omega, as expected
+                 for junction-transport (string fragmentation between beam and Omega);
+                 near zero / positive for pair-produced]
       index 10 — o_y_abs = |y_Omega|  [Omega displacement from midrapidity, broadcast;
                   larger for junction Ω⁻ (beam-remnant origin) than thermal Ω̄⁺]
     Total: 11 features per kaon (vs 10 in balanced dataset).
@@ -251,11 +252,16 @@ def run_unpadded_preprocessing(input_file, output_file):
         k_star       = compute_kstar(f_px, f_py, f_pz, o_px, o_py, o_pz)
         cos_theta_st = compute_cos_theta_star(f_px, f_py, f_pz, o_px, o_py, o_pz)
 
-        # Directed rapidity gap: sign(y_Omega) × (y_K − y_Omega)
-        # Negative → kaon is on the midrapidity side (expected for junction transport)
-        # Near zero → symmetric (expected for pair production)
+        # Directed rapidity gap: |y_K| − |y_Ω|
+        # Negative → kaon is closer to midrapidity than Omega (expected for junction: string
+        #   fragments between beam remnant and Omega deposit kaons at smaller |y|)
+        # Positive → kaon is further from midrapidity than Omega
+        # Near zero → symmetric (expected for pair-produced)
+        # NOTE: sign(y_Ω)×(y_K−y_Ω) is WRONG — it gives a false negative when y_K
+        # crosses zero (kaon on the opposite side of midrapidity from Omega, yet further away).
         y_o = compute_omega_rapidity(o_px, o_py, o_pz)
-        d_y_signed = np.sign(y_o) * compute_delta_y(f_px, f_py, f_pz, o_px, o_py, o_pz)
+        y_k = compute_delta_y(f_px, f_py, f_pz, o_px, o_py, o_pz) + y_o  # y_k = delta_y + y_o
+        d_y_signed = np.abs(y_k) - abs(y_o)
 
         d_phi = np.abs(((f_phi - o_phi) + np.pi) % (2 * np.pi) - np.pi)
 
