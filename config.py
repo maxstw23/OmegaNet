@@ -21,12 +21,17 @@ KSTAR_CLIP = 8.0
 
 # ── Feature configuration ──────────────────────────────────────────────────────
 # All features produced by preprocess_data.py in canonical order.
-# TODO: add "phi_omega_minus_psi_ep" (event plane angle) once ROOT file is updated.
-FEATURE_REGISTRY = ["f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star"]
+FEATURE_REGISTRY = [
+    "f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star",
+    "o_cos_psi1", "o_cos2_psi2", "f_cos_psi1", "f_cos2_psi2"
+]
 
 # Active features for this run — edit ONLY this list to change the feature set.
 # o_pt excluded: p̄ absorption asymmetry biases Ω̄⁺ reconstruction efficiency.
-FEATURE_NAMES = ["f_pt", "k_star", "d_y", "d_phi", "cos_theta_star"]
+FEATURE_NAMES = [
+    "f_pt", "k_star", "d_y", "d_phi", "cos_theta_star",
+    "o_cos_psi1", "o_cos2_psi2", "f_cos_psi1", "f_cos2_psi2"
+]
 
 # Derived — do not edit manually.
 FEATURE_IDX = [FEATURE_REGISTRY.index(f) for f in FEATURE_NAMES]

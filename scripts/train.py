@@ -2,6 +2,7 @@ import sys
 import os
 import copy
 import glob
+import argparse
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models"))
 
@@ -15,6 +16,20 @@ from tqdm import tqdm
 
 CHECKPOINT_THRESHOLD = 0.55  # Logged for reference; checkpoint is now by argmax score
 EMA_DECAY = 0.999             # EMA shadow model decay for stable checkpointing
+
+# ── Optional CLI feature override ─────────────────────────────────────────────
+def _apply_feature_override():
+    """Parse --features f1,f2,... and patch config in-place before training."""
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--features", type=str, default=None,
+                        help="Comma-separated feature names to override config.FEATURE_NAMES")
+    args, _ = parser.parse_known_args()
+    if args.features:
+        names = [f.strip() for f in args.features.split(",")]
+        config.FEATURE_NAMES = names
+        config.FEATURE_IDX = [config.FEATURE_REGISTRY.index(f) for f in names]
+        config.IN_CHANNELS = len(names)
+        config.KSTAR_IDX = names.index("k_star") if "k_star" in names else None
 
 
 def get_next_run_number():
@@ -213,4 +228,5 @@ def run_training():
 
 
 if __name__ == "__main__":
+    _apply_feature_override()
     run_training()

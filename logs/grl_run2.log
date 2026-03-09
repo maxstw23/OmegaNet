@@ -1,0 +1,111 @@
+GRL Run 2 | features=['f_pt', 'k_star', 'd_y', 'd_phi', 'cos_theta_star', 'o_cos_psi1', 'o_cos2_psi2', 'f_cos_psi1', 'f_cos2_psi2'] | IN_CHANNELS=9
+Dataset: 110758 Omega, 52934 Anti-Omega
+ADV_LAMBDA=0.1 | GRL_ALPHA_MAX=1.0 | warmup=30 epochs
+OmegaTransformerGRL: 279,427 parameters
+Starting GRL training...
+
+Epoch 001 | α=0.033 | cls=1.3198 adv=2.1171 | Omega Rec: 0.759 | Anti Rec: 0.468 | A@0.55: 0.330 | Score: 0.2272 | LR: 0.000500 | No-improve: 0/25
+Epoch 002 | α=0.067 | cls=1.2928 adv=0.0833 | Omega Rec: 0.692 | Anti Rec: 0.571 | A@0.55: 0.456 | Score: 0.2624 | LR: 0.000500 | No-improve: 0/25
+Epoch 003 | α=0.100 | cls=1.2870 adv=0.0755 | Omega Rec: 0.690 | Anti Rec: 0.582 | A@0.55: 0.478 | Score: 0.2714 | LR: 0.000500 | No-improve: 0/25
+Epoch 004 | α=0.133 | cls=1.2810 adv=0.0723 | Omega Rec: 0.676 | Anti Rec: 0.599 | A@0.55: 0.504 | Score: 0.2748 | LR: 0.000500 | No-improve: 0/25
+Epoch 005 | α=0.167 | cls=1.2778 adv=0.0705 | Omega Rec: 0.663 | Anti Rec: 0.618 | A@0.55: 0.527 | Score: 0.2814 | LR: 0.000500 | No-improve: 0/25
+Epoch 006 | α=0.200 | cls=1.2743 adv=0.0696 | Omega Rec: 0.673 | Anti Rec: 0.611 | A@0.55: 0.520 | Score: 0.2838 | LR: 0.000500 | No-improve: 0/25
+Epoch 007 | α=0.233 | cls=1.2704 adv=0.0699 | Omega Rec: 0.673 | Anti Rec: 0.615 | A@0.55: 0.522 | Score: 0.2879 | LR: 0.000500 | No-improve: 0/25
+Epoch 008 | α=0.267 | cls=1.2673 adv=0.0706 | Omega Rec: 0.668 | Anti Rec: 0.622 | A@0.55: 0.529 | Score: 0.2895 | LR: 0.000500 | No-improve: 0/25
+Epoch 009 | α=0.300 | cls=1.2663 adv=0.0719 | Omega Rec: 0.664 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.2907 | LR: 0.000500 | No-improve: 0/25
+Epoch 010 | α=0.333 | cls=1.2662 adv=0.0714 | Omega Rec: 0.666 | Anti Rec: 0.628 | A@0.55: 0.533 | Score: 0.2937 | LR: 0.000500 | No-improve: 0/25
+Epoch 011 | α=0.367 | cls=1.2650 adv=0.0730 | Omega Rec: 0.664 | Anti Rec: 0.628 | A@0.55: 0.532 | Score: 0.2922 | LR: 0.000500 | No-improve: 0/25
+Epoch 012 | α=0.400 | cls=1.2643 adv=0.0739 | Omega Rec: 0.655 | Anti Rec: 0.637 | A@0.55: 0.543 | Score: 0.2919 | LR: 0.000500 | No-improve: 1/25
+Epoch 013 | α=0.433 | cls=1.2629 adv=0.0748 | Omega Rec: 0.662 | Anti Rec: 0.630 | A@0.55: 0.535 | Score: 0.2924 | LR: 0.000500 | No-improve: 2/25
+Epoch 014 | α=0.467 | cls=1.2611 adv=0.0745 | Omega Rec: 0.660 | Anti Rec: 0.634 | A@0.55: 0.540 | Score: 0.2933 | LR: 0.000500 | No-improve: 3/25
+Epoch 015 | α=0.500 | cls=1.2609 adv=0.0753 | Omega Rec: 0.657 | Anti Rec: 0.636 | A@0.55: 0.540 | Score: 0.2931 | LR: 0.000500 | No-improve: 4/25
+Epoch 016 | α=0.533 | cls=1.2603 adv=0.0752 | Omega Rec: 0.657 | Anti Rec: 0.636 | A@0.55: 0.541 | Score: 0.2933 | LR: 0.000250 | No-improve: 5/25
+Epoch 017 | α=0.567 | cls=1.2523 adv=0.0748 | Omega Rec: 0.651 | Anti Rec: 0.643 | A@0.55: 0.548 | Score: 0.2938 | LR: 0.000250 | No-improve: 6/25
+Epoch 018 | α=0.600 | cls=1.2513 adv=0.0753 | Omega Rec: 0.656 | Anti Rec: 0.636 | A@0.55: 0.542 | Score: 0.2927 | LR: 0.000250 | No-improve: 0/25
+Epoch 019 | α=0.633 | cls=1.2507 adv=0.0751 | Omega Rec: 0.659 | Anti Rec: 0.635 | A@0.55: 0.541 | Score: 0.2948 | LR: 0.000250 | No-improve: 1/25
+Epoch 020 | α=0.667 | cls=1.2501 adv=0.0757 | Omega Rec: 0.659 | Anti Rec: 0.636 | A@0.55: 0.541 | Score: 0.2948 | LR: 0.000250 | No-improve: 0/25
+Epoch 021 | α=0.700 | cls=1.2490 adv=0.0757 | Omega Rec: 0.659 | Anti Rec: 0.635 | A@0.55: 0.541 | Score: 0.2944 | LR: 0.000250 | No-improve: 1/25
+Epoch 022 | α=0.733 | cls=1.2496 adv=0.0760 | Omega Rec: 0.659 | Anti Rec: 0.636 | A@0.55: 0.545 | Score: 0.2953 | LR: 0.000250 | No-improve: 2/25
+Epoch 023 | α=0.767 | cls=1.2500 adv=0.0760 | Omega Rec: 0.662 | Anti Rec: 0.636 | A@0.55: 0.541 | Score: 0.2983 | LR: 0.000250 | No-improve: 0/25
+Epoch 024 | α=0.800 | cls=1.2479 adv=0.0758 | Omega Rec: 0.666 | Anti Rec: 0.632 | A@0.55: 0.537 | Score: 0.2981 | LR: 0.000250 | No-improve: 0/25
+Epoch 025 | α=0.833 | cls=1.2491 adv=0.0763 | Omega Rec: 0.667 | Anti Rec: 0.631 | A@0.55: 0.536 | Score: 0.2974 | LR: 0.000250 | No-improve: 1/25
+Epoch 026 | α=0.867 | cls=1.2477 adv=0.0761 | Omega Rec: 0.668 | Anti Rec: 0.630 | A@0.55: 0.535 | Score: 0.2981 | LR: 0.000250 | No-improve: 2/25
+Epoch 027 | α=0.900 | cls=1.2486 adv=0.0765 | Omega Rec: 0.669 | Anti Rec: 0.629 | A@0.55: 0.535 | Score: 0.2981 | LR: 0.000250 | No-improve: 3/25
+Epoch 028 | α=0.933 | cls=1.2474 adv=0.0761 | Omega Rec: 0.669 | Anti Rec: 0.631 | A@0.55: 0.536 | Score: 0.3002 | LR: 0.000250 | No-improve: 4/25
+Epoch 029 | α=0.967 | cls=1.2468 adv=0.0761 | Omega Rec: 0.669 | Anti Rec: 0.632 | A@0.55: 0.537 | Score: 0.3011 | LR: 0.000250 | No-improve: 0/25
+Epoch 030 | α=1.000 | cls=1.2458 adv=0.0766 | Omega Rec: 0.671 | Anti Rec: 0.630 | A@0.55: 0.533 | Score: 0.3007 | LR: 0.000250 | No-improve: 0/25
+Epoch 031 | α=1.000 | cls=1.2458 adv=0.0762 | Omega Rec: 0.668 | Anti Rec: 0.632 | A@0.55: 0.537 | Score: 0.3005 | LR: 0.000250 | No-improve: 1/25
+Epoch 032 | α=1.000 | cls=1.2458 adv=0.0763 | Omega Rec: 0.668 | Anti Rec: 0.634 | A@0.55: 0.537 | Score: 0.3020 | LR: 0.000250 | No-improve: 2/25
+Epoch 033 | α=1.000 | cls=1.2455 adv=0.0760 | Omega Rec: 0.668 | Anti Rec: 0.635 | A@0.55: 0.537 | Score: 0.3034 | LR: 0.000250 | No-improve: 0/25
+Epoch 034 | α=1.000 | cls=1.2444 adv=0.0760 | Omega Rec: 0.668 | Anti Rec: 0.635 | A@0.55: 0.538 | Score: 0.3030 | LR: 0.000250 | No-improve: 0/25
+Epoch 035 | α=1.000 | cls=1.2456 adv=0.0759 | Omega Rec: 0.669 | Anti Rec: 0.636 | A@0.55: 0.537 | Score: 0.3045 | LR: 0.000250 | No-improve: 1/25
+Epoch 036 | α=1.000 | cls=1.2444 adv=0.0757 | Omega Rec: 0.667 | Anti Rec: 0.637 | A@0.55: 0.539 | Score: 0.3035 | LR: 0.000250 | No-improve: 0/25
+Epoch 037 | α=1.000 | cls=1.2443 adv=0.0759 | Omega Rec: 0.668 | Anti Rec: 0.635 | A@0.55: 0.541 | Score: 0.3031 | LR: 0.000250 | No-improve: 1/25
+Epoch 038 | α=1.000 | cls=nan adv=0.0757 | Omega Rec: 0.669 | Anti Rec: 0.635 | A@0.55: 0.537 | Score: 0.3036 | LR: 0.000250 | No-improve: 2/25
+Epoch 039 | α=1.000 | cls=1.2429 adv=0.0757 | Omega Rec: 0.671 | Anti Rec: 0.633 | A@0.55: 0.535 | Score: 0.3046 | LR: 0.000250 | No-improve: 3/25
+Epoch 040 | α=1.000 | cls=1.2447 adv=0.0760 | Omega Rec: 0.672 | Anti Rec: 0.632 | A@0.55: 0.533 | Score: 0.3039 | LR: 0.000250 | No-improve: 0/25
+Epoch 041 | α=1.000 | cls=1.2423 adv=0.0757 | Omega Rec: 0.675 | Anti Rec: 0.631 | A@0.55: 0.534 | Score: 0.3059 | LR: 0.000250 | No-improve: 1/25
+Epoch 042 | α=1.000 | cls=1.2427 adv=0.0754 | Omega Rec: 0.672 | Anti Rec: 0.633 | A@0.55: 0.536 | Score: 0.3051 | LR: 0.000250 | No-improve: 0/25
+Epoch 043 | α=1.000 | cls=1.2417 adv=0.0755 | Omega Rec: 0.675 | Anti Rec: 0.630 | A@0.55: 0.535 | Score: 0.3055 | LR: 0.000250 | No-improve: 1/25
+Epoch 044 | α=1.000 | cls=1.2419 adv=0.0753 | Omega Rec: 0.674 | Anti Rec: 0.629 | A@0.55: 0.537 | Score: 0.3034 | LR: 0.000250 | No-improve: 2/25
+Epoch 045 | α=1.000 | cls=1.2429 adv=0.0754 | Omega Rec: 0.675 | Anti Rec: 0.629 | A@0.55: 0.536 | Score: 0.3043 | LR: 0.000250 | No-improve: 3/25
+Epoch 046 | α=1.000 | cls=1.2413 adv=0.0754 | Omega Rec: 0.677 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3043 | LR: 0.000250 | No-improve: 4/25
+Epoch 047 | α=1.000 | cls=1.2423 adv=0.0753 | Omega Rec: 0.675 | Anti Rec: 0.630 | A@0.55: 0.534 | Score: 0.3054 | LR: 0.000125 | No-improve: 5/25
+Epoch 048 | α=1.000 | cls=1.2369 adv=0.0750 | Omega Rec: 0.676 | Anti Rec: 0.632 | A@0.55: 0.536 | Score: 0.3073 | LR: 0.000125 | No-improve: 6/25
+Epoch 049 | α=1.000 | cls=1.2373 adv=0.0751 | Omega Rec: 0.677 | Anti Rec: 0.630 | A@0.55: 0.535 | Score: 0.3069 | LR: 0.000125 | No-improve: 0/25
+Epoch 050 | α=1.000 | cls=1.2356 adv=0.0747 | Omega Rec: 0.675 | Anti Rec: 0.630 | A@0.55: 0.537 | Score: 0.3052 | LR: 0.000125 | No-improve: 1/25
+Epoch 051 | α=1.000 | cls=1.2354 adv=0.0750 | Omega Rec: 0.676 | Anti Rec: 0.632 | A@0.55: 0.537 | Score: 0.3075 | LR: 0.000125 | No-improve: 2/25
+Epoch 052 | α=1.000 | cls=1.2359 adv=0.0746 | Omega Rec: 0.678 | Anti Rec: 0.628 | A@0.55: 0.535 | Score: 0.3057 | LR: 0.000125 | No-improve: 0/25
+Epoch 053 | α=1.000 | cls=1.2349 adv=0.0747 | Omega Rec: 0.677 | Anti Rec: 0.629 | A@0.55: 0.536 | Score: 0.3064 | LR: 0.000125 | No-improve: 1/25
+Epoch 054 | α=1.000 | cls=1.2356 adv=0.0748 | Omega Rec: 0.677 | Anti Rec: 0.630 | A@0.55: 0.536 | Score: 0.3065 | LR: 0.000125 | No-improve: 2/25
+Epoch 055 | α=1.000 | cls=1.2347 adv=0.0748 | Omega Rec: 0.678 | Anti Rec: 0.628 | A@0.55: 0.532 | Score: 0.3064 | LR: 0.000125 | No-improve: 3/25
+Epoch 056 | α=1.000 | cls=1.2365 adv=0.0747 | Omega Rec: 0.679 | Anti Rec: 0.628 | A@0.55: 0.535 | Score: 0.3065 | LR: 0.000125 | No-improve: 4/25
+Epoch 057 | α=1.000 | cls=1.2347 adv=0.0749 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.535 | Score: 0.3069 | LR: 0.000063 | No-improve: 5/25
+Epoch 058 | α=1.000 | cls=1.2318 adv=0.0745 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3057 | LR: 0.000063 | No-improve: 6/25
+Epoch 059 | α=1.000 | cls=1.2307 adv=0.0741 | Omega Rec: 0.680 | Anti Rec: 0.626 | A@0.55: 0.534 | Score: 0.3060 | LR: 0.000063 | No-improve: 7/25
+Epoch 060 | α=1.000 | cls=1.2306 adv=0.0742 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3058 | LR: 0.000063 | No-improve: 8/25
+Epoch 061 | α=1.000 | cls=1.2318 adv=0.0743 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3070 | LR: 0.000063 | No-improve: 9/25
+Epoch 062 | α=1.000 | cls=1.2311 adv=0.0741 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3059 | LR: 0.000063 | No-improve: 10/25
+Epoch 063 | α=1.000 | cls=1.2314 adv=0.0742 | Omega Rec: 0.678 | Anti Rec: 0.628 | A@0.55: 0.533 | Score: 0.3063 | LR: 0.000031 | No-improve: 11/25
+Epoch 064 | α=1.000 | cls=1.2296 adv=0.0740 | Omega Rec: 0.679 | Anti Rec: 0.628 | A@0.55: 0.532 | Score: 0.3070 | LR: 0.000031 | No-improve: 12/25
+Epoch 065 | α=1.000 | cls=1.2293 adv=0.0741 | Omega Rec: 0.678 | Anti Rec: 0.628 | A@0.55: 0.533 | Score: 0.3057 | LR: 0.000031 | No-improve: 13/25
+Epoch 066 | α=1.000 | cls=1.2285 adv=0.0742 | Omega Rec: 0.678 | Anti Rec: 0.628 | A@0.55: 0.534 | Score: 0.3062 | LR: 0.000031 | No-improve: 14/25
+Epoch 067 | α=1.000 | cls=1.2278 adv=0.0739 | Omega Rec: 0.677 | Anti Rec: 0.629 | A@0.55: 0.535 | Score: 0.3061 | LR: 0.000031 | No-improve: 15/25
+Epoch 068 | α=1.000 | cls=1.2293 adv=0.0740 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.534 | Score: 0.3059 | LR: 0.000031 | No-improve: 16/25
+Epoch 069 | α=1.000 | cls=1.2281 adv=0.0742 | Omega Rec: 0.679 | Anti Rec: 0.628 | A@0.55: 0.534 | Score: 0.3063 | LR: 0.000016 | No-improve: 17/25
+Epoch 070 | α=1.000 | cls=1.2282 adv=0.0741 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3068 | LR: 0.000016 | No-improve: 18/25
+Epoch 071 | α=1.000 | cls=1.2278 adv=0.0740 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3071 | LR: 0.000016 | No-improve: 19/25
+Epoch 072 | α=1.000 | cls=1.2273 adv=0.0740 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3069 | LR: 0.000016 | No-improve: 20/25
+Epoch 073 | α=1.000 | cls=1.2281 adv=0.0740 | Omega Rec: 0.680 | Anti Rec: 0.628 | A@0.55: 0.532 | Score: 0.3073 | LR: 0.000016 | No-improve: 21/25
+Epoch 074 | α=1.000 | cls=1.2274 adv=0.0741 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3063 | LR: 0.000016 | No-improve: 22/25
+Epoch 075 | α=1.000 | cls=1.2276 adv=0.0740 | Omega Rec: 0.681 | Anti Rec: 0.627 | A@0.55: 0.531 | Score: 0.3078 | LR: 0.000016 | No-improve: 23/25
+Epoch 076 | α=1.000 | cls=1.2276 adv=0.0740 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.534 | Score: 0.3059 | LR: 0.000016 | No-improve: 0/25
+Epoch 077 | α=1.000 | cls=1.2279 adv=0.0739 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3066 | LR: 0.000016 | No-improve: 1/25
+Epoch 078 | α=1.000 | cls=1.2286 adv=0.0740 | Omega Rec: 0.679 | Anti Rec: 0.628 | A@0.55: 0.534 | Score: 0.3067 | LR: 0.000016 | No-improve: 2/25
+Epoch 079 | α=1.000 | cls=1.2286 adv=0.0742 | Omega Rec: 0.680 | Anti Rec: 0.628 | A@0.55: 0.534 | Score: 0.3075 | LR: 0.000016 | No-improve: 3/25
+Epoch 080 | α=1.000 | cls=1.2276 adv=0.0739 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3070 | LR: 0.000016 | No-improve: 4/25
+Epoch 081 | α=1.000 | cls=1.2278 adv=0.0741 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3065 | LR: 0.000008 | No-improve: 5/25
+Epoch 082 | α=1.000 | cls=1.2259 adv=0.0740 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3069 | LR: 0.000008 | No-improve: 6/25
+Epoch 083 | α=1.000 | cls=1.2274 adv=0.0739 | Omega Rec: 0.678 | Anti Rec: 0.629 | A@0.55: 0.534 | Score: 0.3071 | LR: 0.000008 | No-improve: 7/25
+Epoch 084 | α=1.000 | cls=1.2271 adv=0.0738 | Omega Rec: 0.678 | Anti Rec: 0.629 | A@0.55: 0.534 | Score: 0.3073 | LR: 0.000008 | No-improve: 8/25
+Epoch 085 | α=1.000 | cls=1.2279 adv=0.0738 | Omega Rec: 0.678 | Anti Rec: 0.628 | A@0.55: 0.535 | Score: 0.3062 | LR: 0.000008 | No-improve: 9/25
+Epoch 086 | α=1.000 | cls=1.2282 adv=0.0739 | Omega Rec: 0.679 | Anti Rec: 0.628 | A@0.55: 0.533 | Score: 0.3069 | LR: 0.000008 | No-improve: 10/25
+Epoch 087 | α=1.000 | cls=1.2267 adv=0.0740 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3061 | LR: 0.000004 | No-improve: 11/25
+Epoch 088 | α=1.000 | cls=1.2275 adv=0.0739 | Omega Rec: 0.678 | Anti Rec: 0.629 | A@0.55: 0.534 | Score: 0.3063 | LR: 0.000004 | No-improve: 12/25
+Epoch 089 | α=1.000 | cls=1.2269 adv=0.0739 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3064 | LR: 0.000004 | No-improve: 13/25
+Epoch 090 | α=1.000 | cls=1.2272 adv=0.0739 | Omega Rec: 0.679 | Anti Rec: 0.626 | A@0.55: 0.533 | Score: 0.3055 | LR: 0.000004 | No-improve: 14/25
+Epoch 091 | α=1.000 | cls=1.2269 adv=0.0738 | Omega Rec: 0.680 | Anti Rec: 0.626 | A@0.55: 0.532 | Score: 0.3060 | LR: 0.000004 | No-improve: 15/25
+Epoch 092 | α=1.000 | cls=1.2265 adv=0.0738 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3070 | LR: 0.000004 | No-improve: 16/25
+Epoch 093 | α=1.000 | cls=1.2272 adv=0.0739 | Omega Rec: 0.679 | Anti Rec: 0.628 | A@0.55: 0.533 | Score: 0.3065 | LR: 0.000002 | No-improve: 17/25
+Epoch 094 | α=1.000 | cls=1.2270 adv=0.0739 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3062 | LR: 0.000002 | No-improve: 18/25
+Epoch 095 | α=1.000 | cls=nan adv=0.0739 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3058 | LR: 0.000002 | No-improve: 19/25
+Epoch 096 | α=1.000 | cls=1.2281 adv=0.0739 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3062 | LR: 0.000002 | No-improve: 20/25
+Epoch 097 | α=1.000 | cls=1.2279 adv=0.0738 | Omega Rec: 0.680 | Anti Rec: 0.627 | A@0.55: 0.532 | Score: 0.3064 | LR: 0.000002 | No-improve: 21/25
+Epoch 098 | α=1.000 | cls=1.2276 adv=0.0739 | Omega Rec: 0.680 | Anti Rec: 0.626 | A@0.55: 0.532 | Score: 0.3060 | LR: 0.000002 | No-improve: 22/25
+Epoch 099 | α=1.000 | cls=1.2259 adv=0.0739 | Omega Rec: 0.680 | Anti Rec: 0.626 | A@0.55: 0.532 | Score: 0.3056 | LR: 0.000001 | No-improve: 23/25
+Epoch 100 | α=1.000 | cls=1.2257 adv=0.0739 | Omega Rec: 0.679 | Anti Rec: 0.627 | A@0.55: 0.533 | Score: 0.3061 | LR: 0.000001 | No-improve: 24/25
+
+Early stopping: no improvement for 25 epochs.
+
+Best Score: 0.3078 | Anti (argmax): 0.6270 | A@0.55: 0.5312  →  saved to models/omega_grl.pth
+Log saved to logs/grl_run2.log

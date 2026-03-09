@@ -33,14 +33,14 @@ Current model: **OmegaTransformer** (`models/transformer_model.py`)
 - Checkpoint: `models/omega_transformer.pth`
 
 Config (`config.py`):
-- `IN_CHANNELS = 5` — derived from `len(FEATURE_NAMES)`; edit only `FEATURE_NAMES` to change features
+- `IN_CHANNELS = 9` — derived from `len(FEATURE_NAMES)`; edit only `FEATURE_NAMES` to change features
 - `D_MODEL = 128`, `NHEAD = 4`, `NUM_LAYERS = 2`, `DIM_FEEDFORWARD = 256`
 - `KSTAR_CLIP = 8.0` — applied to k* (feature index 1) before normalisation
 
 ## Features
 
-Six features per kaon stored in `data/balanced_omega_anti.pt` (canonical order = `FEATURE_REGISTRY`).
-Active set controlled by `FEATURE_NAMES` in `config.py` (currently 5 features; `o_pt` excluded).
+Ten features per kaon stored in `data/balanced_omega_anti.pt` (canonical order = `FEATURE_REGISTRY`).
+Active set controlled by `FEATURE_NAMES` in `config.py` (currently 9 features; `o_pt` excluded).
 
 | Index | Name | Description |
 |---|---|---|
@@ -50,6 +50,10 @@ Active set controlled by `FEATURE_NAMES` in `config.py` (currently 5 features; `
 | 3 | `d_phi` | \|φ_kaon − φ_Omega\| in [0, π] — absolute azimuthal separation (no preferred direction) |
 | 4 | `o_pt` | Omega pT [GeV/c], broadcast — **excluded** (p̄ absorption biases Ω̄⁺ reconstruction) |
 | 5 | `cos_theta_star` | cos(θ*) = k*_z / \|k*\| — beam-axis angle in pair rest frame (source elongation probe) |
+| 6 | `o_cos_psi1` | cos(φ_Ω − Ψ₁) — Omega v₁ alignment with EPD 1st-order event plane, broadcast |
+| 7 | `o_cos2_psi2` | cos(2(φ_Ω − Ψ₂)) — Omega v₂ alignment with EPD 2nd-order event plane, broadcast |
+| 8 | `f_cos_psi1` | cos(φ_K − Ψ₁) — kaon v₁ alignment with EPD 1st-order event plane, per-kaon |
+| 9 | `f_cos2_psi2` | cos(2(φ_K − Ψ₂)) — kaon v₂ alignment with EPD 2nd-order event plane, per-kaon |
 
 k* uses PDG masses: m_K = 0.493677 GeV/c², m_Ω = 1.67245 GeV/c².
 Feature means/stds are auto-computed by preprocessing and saved to `data/balanced_omega_anti_stats.pt`.
@@ -78,9 +82,13 @@ loss = mean(−log p(x)    | Anti events)    # P(pair-produced) → 1
 - Scheduler: ReduceLROnPlateau on argmax score, patience = 5, factor = 0.5
 
 Key training findings:
-- Score plateaus at ~0.40 regardless of loss weights, model size, or features
+- Score ceiling ~0.31–0.32 (argmax t=0.5) confirmed across 21 BCE runs, 5 NCE/DensityRatio runs, GRL adversarial, consistency regularization, and EM pseudo-labeling — see `docs/experiments.md`
 - Per-kaon feature distributions are nearly identical between Omega and Anti events
 - Signal lives in multi-kaon correlations — visible as clear separation in P(Anti) score distributions
+- EP cosine features (event-plane alignment) add no signal (run18 vs run16)
+- Ultra-minimal features [k*, cos_θ*] collapse to 0.157 — f_pt, d_y, d_phi are essential
+- GRL adversarial (multiplicity debiasing) and consistency regularization both give ≈0.308, below BCE baseline
+- EM pseudo-labeling correctly down-weights pair-produced Ω⁻ (mean weight 0.45 ≈ π), shifting Anti recall 0.635→0.711, but sweep-optimal score unchanged — genuine physics ceiling, not label-noise artifact
 - Threshold is a post-hoc choice; operating point for physics analysis set by val-set threshold sweep
 
 ## Physics Goal

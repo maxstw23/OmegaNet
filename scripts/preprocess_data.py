@@ -68,7 +68,8 @@ def run_balanced_preprocessing(input_file, output_file):
         tree = file["ml_tree"]
         data = tree.arrays([
             "omega_px", "omega_py", "omega_pz", "omega_charge",
-            "kaon_px", "kaon_py", "kaon_pz", "kaon_charge"
+            "kaon_px", "kaon_py", "kaon_pz", "kaon_charge",
+            "EPDEP_1st", "EPDEP_2nd"
         ], library="ak")
 
     print("Building global K⁻ momentum pool for balancing...")
@@ -140,12 +141,28 @@ def run_balanced_preprocessing(input_file, output_file):
         # |d_phi|: absolute azimuthal separation in [0, π] — no preferred azimuthal direction
         d_phi = np.abs(((f_phi - o_phi) + np.pi) % (2 * np.pi) - np.pi)
 
-        # Node Features: [f_pt, k_star, d_y, d_phi, o_pt, cos_theta_star]
+        # Event-plane angles (one scalar per event)
+        psi1 = float(data[i]["EPDEP_1st"])
+        psi2 = float(data[i]["EPDEP_2nd"])
+
+        # Broadcast (Omega azimuthal alignment with event plane)
+        o_cos_psi1  = np.full(len(f_px), np.cos(o_phi - psi1))
+        o_cos2_psi2 = np.full(len(f_px), np.cos(2.0 * (o_phi - psi2)))
+
+        # Per-kaon (kaon azimuthal alignment with event plane)
+        f_cos_psi1  = np.cos(f_phi - psi1)
+        f_cos2_psi2 = np.cos(2.0 * (f_phi - psi2))
+
+        # Node Features: [f_pt, k_star, d_y, d_phi, o_pt, cos_theta_star,
+        #                 o_cos_psi1, o_cos2_psi2, f_cos_psi1, f_cos2_psi2]
         # d_y = |y_K - y_Omega|, d_phi = |phi_K - phi_Omega|: absolute separations (Au+Au symmetric)
         # All kaons are opposite-sign (strangeness-balancing partners); rel_q dropped (constant).
         # o_pt is broadcast: same value for all kaons in the event (global Omega context)
         o_pt_broadcast = np.full(len(f_px), o_pt)
-        node_features = np.stack([f_pt, k_star, d_y, d_phi, o_pt_broadcast, cos_theta_st], axis=1)
+        node_features = np.stack([
+            f_pt, k_star, d_y, d_phi, o_pt_broadcast, cos_theta_st,
+            o_cos_psi1, o_cos2_psi2, f_cos_psi1, f_cos2_psi2
+        ], axis=1)
 
         y_label = 1 if o_charge > 0 else 0
         processed_graphs.append({
@@ -164,7 +181,11 @@ def run_balanced_preprocessing(input_file, output_file):
     stats_file = output_file.replace(".pt", "_stats.pt")
     torch.save({'means': means, 'stds': stds}, stats_file)
     print(f"Feature stats saved to {stats_file}")
-    for name, m, s in zip(["f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star"], means, stds):
+    feature_names = [
+        "f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star",
+        "o_cos_psi1", "o_cos2_psi2", "f_cos_psi1", "f_cos2_psi2"
+    ]
+    for name, m, s in zip(feature_names, means, stds):
         print(f"  {name}: mean={m:.4f}, std={s:.4f}")
     print("Done!")
 
