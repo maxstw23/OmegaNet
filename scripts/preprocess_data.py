@@ -80,13 +80,34 @@ def run_balanced_preprocessing(input_file, output_file):
             "EPDEP_1st", "EPDEP_2nd"
         ], library="ak")
 
-    print("Building global K⁻ momentum pool for balancing...")
-    all_k_px = ak.to_numpy(ak.flatten(data["kaon_px"]))
-    all_k_py = ak.to_numpy(ak.flatten(data["kaon_py"]))
-    all_k_pz = ak.to_numpy(ak.flatten(data["kaon_pz"]))
-    all_k_q = ak.to_numpy(ak.flatten(data["kaon_charge"]))
+    # Build event-mixed K⁻ pool: bin Anti events by (|y_Ω|, pT_Ω) quartiles so
+    # fake kaons drawn for padding have realistic kinematic relationships to their Omega.
+    Y_BINS  = [0.0, 0.24, 0.49, 0.78, np.inf]   # |y_Ω| quartiles
+    PT_BINS = [0.0, 1.41, 1.75, 2.14, np.inf]   # pT_Ω quartiles
+    MIN_POOL_SIZE = 50
 
-    k_neg_pool = np.stack([all_k_px[all_k_q < 0], all_k_py[all_k_q < 0], all_k_pz[all_k_q < 0]], axis=1)
+    print("Building event-mixed K⁻ pool for Anti events...")
+    pool_lists = {}
+    for i in range(len(data)):
+        if int(data[i]["omega_charge"]) <= 0:
+            continue  # only Anti (Ω̄⁺) events contribute to the pool
+        o_px_i, o_py_i, o_pz_i = data[i]["omega_px"], data[i]["omega_py"], data[i]["omega_pz"]
+        y_o_i  = abs(float(compute_omega_rapidity(o_px_i, o_py_i, o_pz_i)))
+        pt_o_i = float(np.sqrt(float(o_px_i)**2 + float(o_py_i)**2))
+        yb  = int(np.searchsorted(Y_BINS[1:],  y_o_i))
+        ptb = int(np.searchsorted(PT_BINS[1:], pt_o_i))
+        k_q_i  = ak.to_numpy(data[i]["kaon_charge"])
+        mask_i = k_q_i < 0
+        kpx_i  = ak.to_numpy(data[i]["kaon_px"])[mask_i]
+        kpy_i  = ak.to_numpy(data[i]["kaon_py"])[mask_i]
+        kpz_i  = ak.to_numpy(data[i]["kaon_pz"])[mask_i]
+        if len(kpx_i) == 0:
+            continue
+        pool_lists.setdefault((yb, ptb), []).append(
+            np.stack([kpx_i, kpy_i, kpz_i], axis=1))
+
+    mixed_pool    = {k: np.concatenate(v, axis=0) for k, v in pool_lists.items()}
+    global_fallback = np.concatenate(list(mixed_pool.values()), axis=0)
 
     processed_graphs = []
 
@@ -116,11 +137,18 @@ def run_balanced_preprocessing(input_file, output_file):
         f_pz = k_pz[oppo_mask]
         n_oppo = len(f_px)
 
-        # For Ω̄⁺ events: pad K⁻ to reach K⁺ count (or trim if K⁻ > K⁺, rare)
+        # For Ω̄⁺ events: pad K⁻ to reach K⁺ count using event-mixed pool (or trim if K⁻ > K⁺)
         if o_charge > 0:
+            y_o_val  = abs(float(compute_omega_rapidity(o_px, o_py, o_pz)))
+            pt_o_val = float(np.sqrt(float(o_px)**2 + float(o_py)**2))
+            yb  = int(np.searchsorted(Y_BINS[1:],  y_o_val))
+            ptb = int(np.searchsorted(PT_BINS[1:], pt_o_val))
+            pool = mixed_pool.get((yb, ptb), global_fallback)
+            if len(pool) < MIN_POOL_SIZE:
+                pool = global_fallback
             if n_oppo < n_pos:
-                idx = np.random.choice(len(k_neg_pool), size=n_pos - n_oppo, replace=True)
-                samples = k_neg_pool[idx]
+                idx = np.random.choice(len(pool), size=n_pos - n_oppo, replace=True)
+                samples = pool[idx]
                 f_px = np.concatenate([f_px, samples[:, 0]])
                 f_py = np.concatenate([f_py, samples[:, 1]])
                 f_pz = np.concatenate([f_pz, samples[:, 2]])

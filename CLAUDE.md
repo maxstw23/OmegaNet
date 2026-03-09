@@ -89,7 +89,9 @@ loss = mean(−log p(x)    | Anti events)    # P(pair-produced) → 1
 - Scheduler: ReduceLROnPlateau on argmax score, patience = 5, factor = 0.5
 
 Key training findings:
-- Score ceiling ~0.31–0.32 (argmax t=0.5) confirmed across 21 BCE runs, 5 NCE/DensityRatio runs, GRL adversarial, consistency regularization, and EM pseudo-labeling — see `docs/experiments.md`
+- **Best score: 0.3418** (run25, event-mixed padding) — event-mixed K⁻ pool broke the prior ~0.31–0.32 ceiling
+- Old global pool sampling biased d_y_signed/o_y_abs — Anti events with many padded kaons scored artificially high; event-mixed pool (binned on |y_Ω|, pT_Ω quartiles) fixes this
+- Score ceiling ~0.31–0.32 confirmed across 21 BCE runs, 5 NCE/DensityRatio runs, GRL adversarial, consistency regularization, and EM pseudo-labeling on old dataset — see `docs/experiments.md`
 - Per-kaon feature distributions are nearly identical between Omega and Anti events
 - Signal lives in multi-kaon correlations — visible as clear separation in P(Anti) score distributions
 - EP cosine features (event-plane alignment) add no signal (run18 vs run16)

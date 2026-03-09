@@ -90,14 +90,34 @@ Secondary: sweep-optimum score (dense threshold scan).
 
 ---
 
+## Event-Mixed Padding (run25)
+
+**Motivation**: Global K⁻ pool sampling was confirmed to bias d_y_signed and o_y_abs —
+fake K⁻ drawn without conditioning on the Omega's kinematics produced pathological
+d_y_signed values that the Transformer exploited. Anti events with many padded kaons
+scored systematically higher (mean padding fraction 0.465 in spike vs 0.285 in bulk).
+
+**Fix**: Replace uniform global pool with event-mixed pool binned on (|y_Ω|, pT_Ω) quartiles
+(4×4 = 16 bins), so fake kaons have realistic kinematic relationships to the Omega they are
+paired with.
+
+| Run | Features | IN | Score (argmax) | O@A=0.90 | Notes |
+|-----|----------|----|----------------|----------|-------|
+| run25 | f_pt, k_star, d_y, d_phi, cos_θ*, d_y_signed, o_y_abs | 7 | **0.3418** | **0.3345** | Event-mixed padding; clear improvement over prior ~0.31–0.32 ceiling |
+
+**Result**: Argmax score 0.3418 (O=0.717, A=0.625) — first run to clearly exceed the ~0.32
+ceiling seen across 21+ prior runs. The improvement confirms that the global pool was
+introducing a real artifact that masked genuine physics signal.
+
+---
+
 ## Summary of Score Ceiling
 
-Across all methods (BCE, NCE, feature variations), score plateaus at ~0.30–0.32.
-This is consistent with the physics picture: pair-produced Ω⁻ events exist in the Omega
-class and generate irreducible label noise. The fundamental ceiling is determined by the
-signal fraction π ≈ 0.5 and the feature separability, not the model architecture.
+Across BCE/NCE/GRL/consistency/EM runs on the old globally-pooled balanced dataset, score
+plateaued at ~0.30–0.32. After fixing the padding artifact with event-mixed sampling, the
+effective ceiling rose to ~0.34.
 
-**Key null results:**
+**Key null results (old preprocessing):**
 - Event-plane cosine features (EP alignment) provide no discriminating signal (run18 vs run16)
 - NCE/density-ratio objective not better than BCE at this signal strength (adv_run4,5)
 - GRL adversarial debiasing (multiplicity invariance) does not help — no residual multiplicity bias after preprocessing (grl_run2)
@@ -106,4 +126,6 @@ signal fraction π ≈ 0.5 and the feature separability, not the model architect
 - Ultra-minimal feature set (k*, cos_θ*) collapses to near-random (0.157) — f_pt, d_y, d_phi are essential
 - Score is robust to model size, loss weights, and feature count (runs 5–21)
 
-**Physics conclusion**: The ~0.31 score ceiling is not an ML artifact. It is consistent with BN-transport Ω⁻ and pair-produced Ω⁻ having nearly identical associated kaon kinematics at BES-II energies, with only a small fraction of events carrying a distinguishable signal.
+**Physics conclusion**: The ~0.34 score (run25, event-mixed padding) represents the current
+best estimate of achievable separability with these features. The padding fix was a real
+data-quality improvement, not a model change.
