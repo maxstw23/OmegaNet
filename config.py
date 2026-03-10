@@ -36,8 +36,8 @@ FEATURE_REGISTRY = [
 # Active features for this run — edit ONLY this list to change the feature set.
 # o_pt excluded: p̄ absorption asymmetry biases Ω̄⁺ reconstruction efficiency.
 FEATURE_NAMES = [
-    "f_pt", "k_star", "d_y", "d_phi", "cos_theta_star",
-    "d_y_signed", "o_y_abs"
+    "k_star", "d_y", "d_phi", "cos_theta_star",
+    "d_y_signed"
 ]
 
 # Derived — do not edit manually.

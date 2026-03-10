@@ -46,6 +46,11 @@ padded kaons scored systematically higher (padding fraction 0.465 in score-spike
 
 Note: run25 included `o_y_abs` which was subsequently removed (introduces biased rapidity shift).
 
+| Run | Features | O@A=0.90 | Notes |
+|-----|----------|----------|-------|
+| run26 | f_pt, k_star, d_y, d_phi, cos_θ*, d_y_signed | **0.3333** | Removed o_y_abs |
+| run27 | k_star, d_y, d_phi, cos_θ*, d_y_signed | **0.3162** | Removed f_pt (K⁺/K⁻ pT spectrum charge-leak); −0.017 is the spurious contribution from f_pt |
+
 **Run 26 interpretation (interpret_model.py):**
 
 Permutation importance (score drop, 15 repeats):
