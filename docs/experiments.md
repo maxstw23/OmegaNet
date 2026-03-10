@@ -46,6 +46,27 @@ padded kaons scored systematically higher (padding fraction 0.465 in score-spike
 
 Note: run25 included `o_y_abs` which was subsequently removed (introduces biased rapidity shift).
 
+**Run 26 interpretation (interpret_model.py):**
+
+Permutation importance (score drop, 15 repeats):
+
+| Feature | Drop | Relative |
+|---|---|---|
+| d_y_signed | 0.221 | 66% |
+| d_y | 0.200 | 60% |
+| f_pt | 0.134 | 40% |
+| k_star | 0.077 | 23% |
+| cos_theta_star | 0.076 | 23% |
+| d_phi | 0.019 | 6% |
+
+The rapidity features (d_y_signed and d_y) dominate — together accounting for ~60–66% of the
+signal. k* and cos_theta_star contribute equally (~23% each). d_phi carries almost no signal.
+No feature has negative importance (no artifact dependency detected).
+
+Attention analysis: attention-weighted feature differences between Omega and Anti are small
+(largest Δ: d_y_signed +0.049, d_y +0.029), consistent with the weak per-kaon signal — the
+model exploits multi-kaon patterns rather than individual distinctive kaons.
+
 ---
 
 ## Key Null Results
