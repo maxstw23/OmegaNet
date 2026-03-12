@@ -1,0 +1,93 @@
+GRL Run 9 | features=['k_star', 'd_y', 'd_phi', 'cos_theta_star', 'd_y_signed'] | IN_CHANNELS=5 | target Anti recall=0.90
+Dataset: 110758 Omega, 52931 Anti-Omega
+ADV_LAMBDA=2.0 | GRL_N_BINS=5 (within-class) | GRL_ALPHA_MAX=1.0 | pretrain=15 epochs | sigmoidal schedule
+OmegaTransformerGRL: 279,081 parameters
+Pre-train phase: 15 epochs (alpha=0, classifier only)
+
+── Baseline multiplicity debiasing check (random init) ──
+Multiplicity debiasing probe: acc=0.3212 (chance=0.2000) → NOT debiased
+
+Starting GRL training...
+
+Epoch 001 | α=0.000 λ=0.0000 | cls=1.0226 adv=1.6142/1.6094 | O@A=0.90: 0.562 (t=0.16, A=0.900) | Argmax: O=0.965 A=0.327 Score=0.2917 | LR: 0.000500 | No-improve: 0/25
+Epoch 002 | α=0.000 λ=0.0000 | cls=0.9726 adv=1.6094/1.6094 | O@A=0.90: 0.606 (t=0.17, A=0.900) | Argmax: O=0.900 A=0.568 Score=0.4675 | LR: 0.000500 | No-improve: 0/25
+Epoch 003 | α=0.000 λ=0.0000 | cls=0.9619 adv=1.6094/1.6094 | O@A=0.90: 0.616 (t=0.19, A=0.900) | Argmax: O=0.869 A=0.637 Score=0.5058 | LR: 0.000500 | No-improve: 0/25
+Epoch 004 | α=0.000 λ=0.0000 | cls=0.9557 adv=1.6094/1.6094 | O@A=0.90: 0.619 (t=0.19, A=0.900) | Argmax: O=0.859 A=0.662 Score=0.5212 | LR: 0.000500 | No-improve: 0/25
+Epoch 005 | α=0.000 λ=0.0000 | cls=0.9502 adv=1.6094/1.6094 | O@A=0.90: 0.622 (t=0.21, A=0.900) | Argmax: O=0.845 A=0.688 Score=0.5326 | LR: 0.000500 | No-improve: 0/25
+Epoch 006 | α=0.000 λ=0.0000 | cls=0.9475 adv=1.6094/1.6094 | O@A=0.90: 0.625 (t=0.22, A=0.900) | Argmax: O=0.839 A=0.699 Score=0.5378 | LR: 0.000500 | No-improve: 0/25
+Epoch 007 | α=0.000 λ=0.0000 | cls=0.9467 adv=1.6094/1.6094 | O@A=0.90: 0.626 (t=0.22, A=0.900) | Argmax: O=0.839 A=0.701 Score=0.5393 | LR: 0.000500 | No-improve: 0/25
+Epoch 008 | α=0.000 λ=0.0000 | cls=0.9420 adv=1.6094/1.6094 | O@A=0.90: 0.627 (t=0.21, A=0.900) | Argmax: O=0.840 A=0.698 Score=0.5378 | LR: 0.000500 | No-improve: 0/25
+Epoch 009 | α=0.000 λ=0.0000 | cls=0.9399 adv=1.6094/1.6094 | O@A=0.90: 0.627 (t=0.22, A=0.900) | Argmax: O=0.838 A=0.703 Score=0.5402 | LR: 0.000500 | No-improve: 0/25
+Epoch 010 | α=0.000 λ=0.0000 | cls=0.9388 adv=1.6094/1.6094 | O@A=0.90: 0.629 (t=0.23, A=0.900) | Argmax: O=0.836 A=0.705 Score=0.5407 | LR: 0.000500 | No-improve: 0/25
+Epoch 011 | α=0.000 λ=0.0000 | cls=0.9368 adv=1.6094/1.6094 | O@A=0.90: 0.632 (t=0.23, A=0.900) | Argmax: O=0.837 A=0.704 Score=0.5415 | LR: 0.000500 | No-improve: 0/25
+Epoch 012 | α=0.000 λ=0.0000 | cls=0.9371 adv=1.6094/1.6094 | O@A=0.90: 0.630 (t=0.23, A=0.900) | Argmax: O=0.837 A=0.706 Score=0.5424 | LR: 0.000500 | No-improve: 0/25
+Epoch 013 | α=0.000 λ=0.0000 | cls=0.9351 adv=1.6094/1.6094 | O@A=0.90: 0.630 (t=0.22, A=0.900) | Argmax: O=0.837 A=0.705 Score=0.5424 | LR: 0.000500 | No-improve: 0/25
+Epoch 014 | α=0.000 λ=0.0000 | cls=0.9353 adv=1.6094/1.6094 | O@A=0.90: 0.630 (t=0.23, A=0.900) | Argmax: O=0.836 A=0.706 Score=0.5420 | LR: 0.000500 | No-improve: 0/25
+Epoch 015 | α=0.000 λ=0.0000 | cls=0.9343 adv=1.6094/1.6094 | O@A=0.90: 0.630 (t=0.23, A=0.900) | Argmax: O=0.835 A=0.708 Score=0.5424 | LR: 0.000500 | No-improve: 0/25
+
+[Epoch 16] GRL phase start — LR reset to 0.0005
+
+Epoch 016 | α=0.027 λ=2.0000 | cls=0.9344 adv=1.3196/1.6094 | O@A=0.90: 0.630 (t=0.23, A=0.900) | Argmax: O=0.833 A=0.711 Score=0.5436 | LR: 0.000500 | No-improve: 0/25
+Epoch 017 | α=0.054 λ=2.0000 | cls=0.9399 adv=1.3283/1.6094 | O@A=0.90: 0.627 (t=0.23, A=0.900) | Argmax: O=0.847 A=0.685 Score=0.5324 | LR: 0.000500 | No-improve: 0/25
+Epoch 018 | α=0.081 λ=2.0000 | cls=0.9455 adv=1.3249/1.6094 | O@A=0.90: 0.611 (t=0.25, A=0.900) | Argmax: O=0.828 A=0.712 Score=0.5400 | LR: 0.000500 | No-improve: 0/25
+Epoch 019 | α=0.108 λ=2.0000 | cls=0.9547 adv=1.3575/1.6094 | O@A=0.90: 0.610 (t=0.23, A=0.900) | Argmax: O=0.827 A=0.708 Score=0.5353 | LR: 0.000500 | No-improve: 0/25
+Epoch 020 | α=0.134 λ=2.0000 | cls=0.9572 adv=1.3668/1.6094 | O@A=0.90: 0.585 (t=0.26, A=0.900) | Argmax: O=0.799 A=0.740 Score=0.5387 | LR: 0.000500 | No-improve: 0/25
+Epoch 021 | α=0.161 λ=2.0000 | cls=0.9718 adv=1.4829/1.6094 | O@A=0.90: 0.601 (t=0.13, A=0.900) | Argmax: O=0.864 A=0.643 Score=0.5066 | LR: 0.000500 | No-improve: 0/25
+Epoch 022 | α=0.187 λ=2.0000 | cls=0.9930 adv=1.6893/1.6094 | O@A=0.90: 0.442 (t=0.11, A=0.901) | Argmax: O=0.898 A=0.488 Score=0.3858 | LR: 0.000250 | [CONSTRAINED] No-improve: 0/25
+Epoch 023 | α=0.213 λ=2.0000 | cls=0.9748 adv=1.6633/1.6094 | O@A=0.90: 0.454 (t=0.25, A=0.900) | Argmax: O=0.832 A=0.627 Score=0.4593 | LR: 0.000250 | [CONSTRAINED] No-improve: 0/25
+Epoch 024 | α=0.239 λ=2.0000 | cls=0.9678 adv=1.6141/1.6094 | O@A=0.90: 0.554 (t=0.25, A=0.900) | Argmax: O=0.902 A=0.414 Score=0.3164 | LR: 0.000250 | [CONSTRAINED] No-improve: 0/25
+Epoch 025 | α=0.264 λ=2.0000 | cls=0.9753 adv=1.6243/1.6094 | O@A=0.90: 0.417 (t=0.04, A=0.901) | Argmax: O=0.968 A=0.144 Score=0.1122 | LR: 0.000250 | [CONSTRAINED] No-improve: 0/25
+Epoch 026 | α=0.289 λ=2.0000 | cls=0.9643 adv=1.6427/1.6094 | O@A=0.90: 0.538 (t=0.24, A=0.900) | Argmax: O=0.975 A=0.230 Score=0.2052 | LR: 0.000250 | [CONSTRAINED] No-improve: 1/25
+Epoch 027 | α=0.313 λ=2.0000 | cls=0.9608 adv=1.5787/1.6094 | O@A=0.90: 0.496 (t=0.16, A=0.900) | Argmax: O=0.974 A=0.263 Score=0.2367 | LR: 0.000250 | [CONSTRAINED] No-improve: 2/25
+Epoch 028 | α=0.338 λ=2.0000 | cls=0.9599 adv=1.6140/1.6094 | O@A=0.90: 0.605 (t=0.27, A=0.900) | Argmax: O=0.829 A=0.677 Score=0.5060 | LR: 0.000125 | [CONSTRAINED] No-improve: 3/25
+Epoch 029 | α=0.361 λ=2.0000 | cls=0.9539 adv=1.5965/1.6094 | O@A=0.90: 0.587 (t=0.18, A=0.900) | Argmax: O=0.927 A=0.482 Score=0.4093 | LR: 0.000125 | [CONSTRAINED] No-improve: 0/25
+Epoch 030 | α=0.385 λ=2.0000 | cls=0.9489 adv=1.6297/1.6094 | O@A=0.90: 0.451 (t=0.21, A=0.900) | Argmax: O=0.931 A=0.437 Score=0.3681 | LR: 0.000125 | [CONSTRAINED] No-improve: 1/25
+Epoch 031 | α=0.407 λ=2.0000 | cls=0.9417 adv=1.5741/1.6094 | O@A=0.90: 0.531 (t=0.27, A=0.900) | Argmax: O=0.872 A=0.581 Score=0.4535 | LR: 0.000125 | [CONSTRAINED] No-improve: 2/25
+Epoch 032 | α=0.430 λ=2.0000 | cls=0.9570 adv=1.6012/1.6094 | O@A=0.90: 0.544 (t=0.37, A=0.900) | Argmax: O=0.783 A=0.729 Score=0.5125 | LR: 0.000125 | [CONSTRAINED] No-improve: 3/25
+Epoch 033 | α=0.451 λ=2.0000 | cls=0.9599 adv=1.5664/1.6094 | O@A=0.90: 0.607 (t=0.23, A=0.900) | Argmax: O=0.908 A=0.528 Score=0.4359 | LR: 0.000125 | [CONSTRAINED] No-improve: 4/25
+Epoch 034 | α=0.473 λ=2.0000 | cls=0.9529 adv=1.6309/1.6094 | O@A=0.90: 0.617 (t=0.24, A=0.900) | Argmax: O=0.873 A=0.613 Score=0.4863 | LR: 0.000063 | [CONSTRAINED] No-improve: 0/25
+Epoch 035 | α=0.493 λ=2.0000 | cls=0.9520 adv=1.6290/1.6094 | O@A=0.90: 0.595 (t=0.35, A=0.900) | Argmax: O=0.839 A=0.665 Score=0.5036 | LR: 0.000063 | [CONSTRAINED] No-improve: 0/25
+Epoch 036 | α=0.514 λ=2.0000 | cls=0.9418 adv=1.5855/1.6094 | O@A=0.90: 0.628 (t=0.27, A=0.900) | Argmax: O=0.814 A=0.739 Score=0.5534 | LR: 0.000063 | [CONSTRAINED] No-improve: 1/25
+Epoch 037 | α=0.533 λ=2.0000 | cls=0.9497 adv=1.5808/1.6094 | O@A=0.90: 0.615 (t=0.19, A=0.900) | Argmax: O=0.861 A=0.658 Score=0.5183 | LR: 0.000063 | [CONSTRAINED] No-improve: 0/25
+Epoch 038 | α=0.552 λ=2.0000 | cls=0.9448 adv=1.5923/1.6094 | O@A=0.90: 0.573 (t=0.33, A=0.900) | Argmax: O=0.803 A=0.732 Score=0.5358 | LR: 0.000063 | [CONSTRAINED] No-improve: 1/25
+Epoch 039 | α=0.571 λ=2.0000 | cls=0.9544 adv=1.6077/1.6094 | O@A=0.90: 0.494 (t=0.35, A=0.900) | Argmax: O=0.794 A=0.697 Score=0.4908 | LR: 0.000063 | [CONSTRAINED] No-improve: 2/25
+Epoch 040 | α=0.589 λ=2.0000 | cls=0.9514 adv=1.5823/1.6094 | O@A=0.90: 0.615 (t=0.14, A=0.900) | Argmax: O=0.882 A=0.621 Score=0.5030 | LR: 0.000031 | [CONSTRAINED] No-improve: 3/25
+Epoch 041 | α=0.606 λ=2.0000 | cls=0.9510 adv=1.5853/1.6094 | O@A=0.90: 0.610 (t=0.16, A=0.900) | Argmax: O=0.893 A=0.590 Score=0.4824 | LR: 0.000031 | [CONSTRAINED] No-improve: 4/25
+Epoch 042 | α=0.623 λ=2.0000 | cls=0.9493 adv=1.6190/1.6094 | O@A=0.90: 0.608 (t=0.23, A=0.900) | Argmax: O=0.856 A=0.661 Score=0.5177 | LR: 0.000031 | [CONSTRAINED] No-improve: 5/25
+Epoch 043 | α=0.639 λ=2.0000 | cls=0.9437 adv=1.6114/1.6094 | O@A=0.90: 0.625 (t=0.23, A=0.900) | Argmax: O=0.861 A=0.663 Score=0.5244 | LR: 0.000031 | [CONSTRAINED] No-improve: 6/25
+Epoch 044 | α=0.655 λ=2.0000 | cls=0.9357 adv=1.5840/1.6094 | O@A=0.90: 0.629 (t=0.22, A=0.900) | Argmax: O=0.839 A=0.703 Score=0.5419 | LR: 0.000031 | [CONSTRAINED] No-improve: 7/25
+Epoch 045 | α=0.670 λ=2.0000 | cls=0.9421 adv=1.5870/1.6094 | O@A=0.90: 0.633 (t=0.22, A=0.900) | Argmax: O=0.922 A=0.481 Score=0.4029 | LR: 0.000031 | [CONSTRAINED] No-improve: 0/25
+Epoch 046 | α=0.685 λ=2.0000 | cls=0.9427 adv=1.5893/1.6094 | O@A=0.90: 0.627 (t=0.19, A=0.900) | Argmax: O=0.874 A=0.638 Score=0.5117 | LR: 0.000031 | [CONSTRAINED] No-improve: 0/25
+Epoch 047 | α=0.699 λ=2.0000 | cls=0.9478 adv=1.6091/1.6094 | O@A=0.90: 0.501 (t=0.25, A=0.900) | Argmax: O=0.790 A=0.714 Score=0.5034 | LR: 0.000031 | [CONSTRAINED] No-improve: 1/25
+Epoch 048 | α=0.712 λ=2.0000 | cls=0.9414 adv=1.5865/1.6094 | O@A=0.90: 0.584 (t=0.28, A=0.900) | Argmax: O=0.827 A=0.670 Score=0.4968 | LR: 0.000031 | [CONSTRAINED] No-improve: 2/25
+Epoch 049 | α=0.725 λ=2.0000 | cls=0.9448 adv=1.5865/1.6094 | O@A=0.90: 0.622 (t=0.21, A=0.900) | Argmax: O=0.859 A=0.667 Score=0.5259 | LR: 0.000031 | [CONSTRAINED] No-improve: 3/25
+Epoch 050 | α=0.738 λ=2.0000 | cls=0.9401 adv=1.5843/1.6094 | O@A=0.90: 0.620 (t=0.28, A=0.900) | Argmax: O=0.848 A=0.688 Score=0.5367 | LR: 0.000031 | [CONSTRAINED] No-improve: 4/25
+Epoch 051 | α=0.750 λ=2.0000 | cls=0.9456 adv=1.5805/1.6094 | O@A=0.90: 0.629 (t=0.21, A=0.900) | Argmax: O=0.878 A=0.624 Score=0.5013 | LR: 0.000016 | [CONSTRAINED] No-improve: 5/25
+Epoch 052 | α=0.762 λ=2.0000 | cls=0.9498 adv=1.5804/1.6094 | O@A=0.90: 0.625 (t=0.20, A=0.900) | Argmax: O=0.856 A=0.675 Score=0.5315 | LR: 0.000016 | [CONSTRAINED] No-improve: 6/25
+Epoch 053 | α=0.773 λ=2.0000 | cls=0.9490 adv=1.5818/1.6094 | O@A=0.90: 0.627 (t=0.22, A=0.900) | Argmax: O=0.848 A=0.687 Score=0.5346 | LR: 0.000016 | [CONSTRAINED] No-improve: 7/25
+Epoch 054 | α=0.783 λ=2.0000 | cls=0.9554 adv=1.6319/1.6094 | O@A=0.90: 0.611 (t=0.28, A=0.900) | Argmax: O=0.867 A=0.614 Score=0.4810 | LR: 0.000016 | [CONSTRAINED] No-improve: 8/25
+Epoch 055 | α=0.794 λ=2.0000 | cls=0.9528 adv=1.6321/1.6094 | O@A=0.90: 0.604 (t=0.34, A=0.900) | Argmax: O=0.775 A=0.734 Score=0.5083 | LR: 0.000016 | [CONSTRAINED] No-improve: 9/25
+Epoch 056 | α=0.803 λ=2.0000 | cls=0.9409 adv=1.5995/1.6094 | O@A=0.90: 0.628 (t=0.25, A=0.900) | Argmax: O=0.823 A=0.719 Score=0.5419 | LR: 0.000016 | [CONSTRAINED] No-improve: 10/25
+Epoch 057 | α=0.813 λ=2.0000 | cls=0.9405 adv=1.5815/1.6094 | O@A=0.90: 0.631 (t=0.23, A=0.900) | Argmax: O=0.828 A=0.718 Score=0.5452 | LR: 0.000008 | [CONSTRAINED] No-improve: 11/25
+Epoch 058 | α=0.822 λ=2.0000 | cls=0.9412 adv=1.5763/1.6094 | O@A=0.90: 0.631 (t=0.21, A=0.900) | Argmax: O=0.841 A=0.697 Score=0.5380 | LR: 0.000008 | [CONSTRAINED] No-improve: 12/25
+Epoch 059 | α=0.830 λ=2.0000 | cls=0.9419 adv=1.5892/1.6094 | O@A=0.90: 0.632 (t=0.22, A=0.900) | Argmax: O=0.842 A=0.695 Score=0.5370 | LR: 0.000008 | [CONSTRAINED] No-improve: 13/25
+Epoch 060 | α=0.839 λ=2.0000 | cls=0.9411 adv=1.5869/1.6094 | O@A=0.90: 0.632 (t=0.26, A=0.900) | Argmax: O=0.843 A=0.693 Score=0.5358 | LR: 0.000008 | [CONSTRAINED] No-improve: 14/25
+Epoch 061 | α=0.846 λ=2.0000 | cls=0.9430 adv=1.5994/1.6094 | O@A=0.90: 0.629 (t=0.21, A=0.900) | Argmax: O=0.845 A=0.687 Score=0.5321 | LR: 0.000008 | [CONSTRAINED] No-improve: 15/25
+Epoch 062 | α=0.854 λ=2.0000 | cls=0.9453 adv=1.6114/1.6094 | O@A=0.90: 0.628 (t=0.20, A=0.900) | Argmax: O=0.841 A=0.693 Score=0.5339 | LR: 0.000008 | [CONSTRAINED] No-improve: 16/25
+Epoch 063 | α=0.861 λ=2.0000 | cls=0.9429 adv=1.6044/1.6094 | O@A=0.90: 0.627 (t=0.21, A=0.900) | Argmax: O=0.837 A=0.704 Score=0.5404 | LR: 0.000004 | [CONSTRAINED] No-improve: 17/25
+Epoch 064 | α=0.868 λ=2.0000 | cls=0.9406 adv=1.5931/1.6094 | O@A=0.90: 0.627 (t=0.21, A=0.900) | Argmax: O=0.845 A=0.691 Score=0.5362 | LR: 0.000004 | [CONSTRAINED] No-improve: 18/25
+Epoch 065 | α=0.874 λ=2.0000 | cls=0.9368 adv=1.5927/1.6094 | O@A=0.90: 0.628 (t=0.21, A=0.900) | Argmax: O=0.852 A=0.678 Score=0.5298 | LR: 0.000004 | [CONSTRAINED] No-improve: 19/25
+Epoch 066 | α=0.881 λ=2.0000 | cls=0.9416 adv=1.6023/1.6094 | O@A=0.90: 0.628 (t=0.21, A=0.900) | Argmax: O=0.857 A=0.670 Score=0.5276 | LR: 0.000004 | [CONSTRAINED] No-improve: 20/25
+Epoch 067 | α=0.887 λ=2.0000 | cls=0.9380 adv=1.6048/1.6094 | O@A=0.90: 0.628 (t=0.22, A=0.900) | Argmax: O=0.856 A=0.678 Score=0.5331 | LR: 0.000004 | [CONSTRAINED] No-improve: 21/25
+Epoch 068 | α=0.892 λ=2.0000 | cls=0.9384 adv=1.5994/1.6094 | O@A=0.90: 0.630 (t=0.21, A=0.900) | Argmax: O=0.846 A=0.692 Score=0.5383 | LR: 0.000004 | [CONSTRAINED] No-improve: 22/25
+Epoch 069 | α=0.898 λ=2.0000 | cls=0.9363 adv=1.5908/1.6094 | O@A=0.90: 0.630 (t=0.21, A=0.900) | Argmax: O=0.839 A=0.703 Score=0.5425 | LR: 0.000002 | [CONSTRAINED] No-improve: 23/25
+Epoch 070 | α=0.903 λ=2.0000 | cls=0.9366 adv=1.5858/1.6094 | O@A=0.90: 0.632 (t=0.22, A=0.900) | Argmax: O=0.838 A=0.705 Score=0.5434 | LR: 0.000002 | [CONSTRAINED] No-improve: 24/25
+
+Early stopping: no improvement for 25 epochs.
+
+Best Omega recall @ Anti=0.90: 0.6325  →  saved to models/omega_grl_unpadded.pth
+Final (most-debiased) model  →  saved to models/omega_grl_unpadded_final.pth
+
+── Multiplicity debiasing check (fresh adversary probe) ──
+Multiplicity debiasing probe: acc=0.5420 (chance=0.2000) → NOT debiased
+Log saved to logs/grl_unpadded_run9.log

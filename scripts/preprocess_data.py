@@ -195,12 +195,14 @@ def run_balanced_preprocessing(input_file, output_file):
         f_cos_psi1  = np.cos(f_phi - psi1)
         f_cos2_psi2 = np.cos(2.0 * (f_phi - psi2))
 
+        net_kaon_val = int(np.sum(k_q > 0)) - int(np.sum(k_q < 0))
         o_pt_broadcast = np.full(len(f_px), o_pt)
         o_y_abs = np.full(len(f_px), abs(y_o))  # index 11: |y_Ω| broadcast
+        net_kaon_broadcast = np.full(len(f_px), net_kaon_val)
         node_features = np.stack([
             f_pt, k_star, d_y, d_phi, o_pt_broadcast, cos_theta_st,
             o_cos_psi1, o_cos2_psi2, f_cos_psi1, f_cos2_psi2,
-            d_y_signed, o_y_abs  # index 10, 11
+            d_y_signed, o_y_abs, net_kaon_broadcast  # index 10, 11, 12
         ], axis=1)
 
         y_label = 1 if o_charge > 0 else 0
@@ -223,7 +225,7 @@ def run_balanced_preprocessing(input_file, output_file):
     feature_names = [
         "f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star",
         "o_cos_psi1", "o_cos2_psi2", "f_cos_psi1", "f_cos2_psi2",
-        "d_y_signed", "o_y_abs"
+        "d_y_signed", "o_y_abs", "net_kaon"
     ]
     for name, m, s in zip(feature_names, means, stds):
         print(f"  {name}: mean={m:.4f}, std={s:.4f}")
@@ -236,14 +238,12 @@ def run_unpadded_preprocessing(input_file, output_file):
     On unpadded data n_kaons(Ω⁻) ≈ n_{K+} > n_{K-} ≈ n_kaons(Ω̄⁺), preserving the
     genuine K⁺/K⁻ asymmetry so a GRL adversary can do real work removing it.
 
-    Feature differences vs balanced:
-      index 2 — d_y_signed = |y_K| − |y_Omega|  [midrapidity proximity gap;
-                 negative means kaon is closer to midrapidity than the Omega, as expected
-                 for junction-transport (string fragmentation between beam and Omega);
-                 near zero / positive for pair-produced]
-      index 10 — o_y_abs = |y_Omega|  [Omega displacement from midrapidity, broadcast;
-                  larger for junction Ω⁻ (beam-remnant origin) than thermal Ω̄⁺]
-    Total: 11 features per kaon (vs 10 in balanced dataset).
+    Feature layout: identical 13-column layout to balanced dataset, so FEATURE_REGISTRY
+    indices work for both datasets without any special casing.
+      index  2 — d_y      = |y_K − y_Ω|  [absolute rapidity gap]
+      index 10 — d_y_signed = |y_K| − |y_Ω|  [midrapidity proximity gap]
+      index 11 — o_y_abs  = |y_Ω|  [Omega rapidity displacement]
+      index 12 — net_kaon = n_K+(event) − n_K−(event)  [event charge asymmetry]
     """
     print(f"Reading STAR TTree from {input_file}...")
     with uproot.open(input_file) as file:
@@ -284,15 +284,15 @@ def run_unpadded_preprocessing(input_file, output_file):
         k_star       = compute_kstar(f_px, f_py, f_pz, o_px, o_py, o_pz)
         cos_theta_st = compute_cos_theta_star(f_px, f_py, f_pz, o_px, o_py, o_pz)
 
-        # Directed rapidity gap: |y_K| − |y_Ω|
-        # Negative → kaon is closer to midrapidity than Omega (expected for junction: string
-        #   fragments between beam remnant and Omega deposit kaons at smaller |y|)
-        # Positive → kaon is further from midrapidity than Omega
-        # Near zero → symmetric (expected for pair-produced)
-        # NOTE: sign(y_Ω)×(y_K−y_Ω) is WRONG — it gives a false negative when y_K
-        # crosses zero (kaon on the opposite side of midrapidity from Omega, yet further away).
+        # Absolute rapidity gap (col 2, same as balanced)
+        delta_y = compute_delta_y(f_px, f_py, f_pz, o_px, o_py, o_pz)
+        d_y = np.abs(delta_y)
+
+        # Directed rapidity gap: |y_K| − |y_Ω| (col 10)
+        # Negative → kaon closer to midrapidity than Omega (junction expectation)
+        # NOTE: sign(y_Ω)×(y_K−y_Ω) is WRONG — false negative when y_K crosses zero.
         y_o = compute_omega_rapidity(o_px, o_py, o_pz)
-        y_k = compute_delta_y(f_px, f_py, f_pz, o_px, o_py, o_pz) + y_o  # y_k = delta_y + y_o
+        y_k = delta_y + y_o
         d_y_signed = np.abs(y_k) - abs(y_o)
 
         d_phi = np.abs(((f_phi - o_phi) + np.pi) % (2 * np.pi) - np.pi)
@@ -306,15 +306,15 @@ def run_unpadded_preprocessing(input_file, output_file):
         f_cos_psi1  = np.cos(f_phi - psi1)
         f_cos2_psi2 = np.cos(2.0 * (f_phi - psi2))
 
-        # |y_Omega|: Omega's displacement from midrapidity (broadcast)
         o_y_abs = np.full(len(f_px), abs(y_o))
+        net_kaon_val = int(np.sum(k_q > 0)) - int(np.sum(k_q < 0))
+        net_kaon_broadcast = np.full(len(f_px), net_kaon_val)
 
-        # 11 features: indices 0-9 match balanced layout (d_y at index 2 is now directed),
-        # index 10 = o_y_abs (new broadcast feature, unpadded dataset only)
+        # 13 features: identical layout to balanced dataset — FEATURE_REGISTRY valid for both
         node_features = np.stack([
-            f_pt, k_star, d_y_signed, d_phi, o_pt_broadcast, cos_theta_st,
+            f_pt, k_star, d_y, d_phi, o_pt_broadcast, cos_theta_st,
             o_cos_psi1, o_cos2_psi2, f_cos_psi1, f_cos2_psi2,
-            o_y_abs
+            d_y_signed, o_y_abs, net_kaon_broadcast  # indices 10, 11, 12
         ], axis=1)
 
         y_label = 1 if o_charge > 0 else 0
@@ -335,8 +335,9 @@ def run_unpadded_preprocessing(input_file, output_file):
     torch.save({'means': means, 'stds': stds}, stats_file)
     print(f"Feature stats saved to {stats_file}")
     feature_names = [
-        "f_pt", "k_star", "d_y_signed", "d_phi", "o_pt", "cos_theta_star",
-        "o_cos_psi1", "o_cos2_psi2", "f_cos_psi1", "f_cos2_psi2", "o_y_abs"
+        "f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star",
+        "o_cos_psi1", "o_cos2_psi2", "f_cos_psi1", "f_cos2_psi2",
+        "d_y_signed", "o_y_abs", "net_kaon"
     ]
     for name, m, s in zip(feature_names, means, stds):
         print(f"  {name}: mean={m:.4f}, std={s:.4f}")

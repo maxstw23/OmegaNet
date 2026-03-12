@@ -31,13 +31,14 @@ FEATURE_REGISTRY = [
     "o_cos_psi1", "o_cos2_psi2", "f_cos_psi1", "f_cos2_psi2",     # 6–9
     "d_y_signed",                                                    # 10: |y_K|−|y_Ω| (padded+unpadded)
     "o_y_abs",                                                       # 11: |y_Ω| broadcast
+    "net_kaon",                                                      # 12: n_K+(real)−n_K−(real), broadcast
 ]
 
 # Active features for this run — edit ONLY this list to change the feature set.
 # o_pt excluded: p̄ absorption asymmetry biases Ω̄⁺ reconstruction efficiency.
 FEATURE_NAMES = [
     "k_star", "d_y", "d_phi", "cos_theta_star",
-    "d_y_signed"
+    "d_y_signed", "net_kaon"
 ]
 
 # Derived — do not edit manually.

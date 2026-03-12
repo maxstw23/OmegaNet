@@ -74,12 +74,51 @@ model exploits multi-kaon patterns rather than individual distinctive kaons.
 
 ---
 
+## GRL on Unpadded Data
+
+Goal: train on unpadded data (genuine K⁺/K⁻ multiplicity asymmetry preserved) while
+constraining the encoder to not exploit kaon multiplicity counts — using a DANN adversary.
+Checkpoint criterion: save only when `adv_loss > 0.95 × log(n_bins)` (adversary at chance).
+
+**Unpadded data preprocessing (re-done)**: updated to 13-column layout matching FEATURE_REGISTRY
+(d_y at col 2, d_y_signed at col 10, o_y_abs at col 11, net_kaon at col 12).
+
+**Adversary design iterations:**
+
+| Run | Adversary | λ | Best constrained O@A | Notes |
+|-----|-----------|---|----------------------|-------|
+| grl_unpadded_run1 | MSE on log(n_kaons) | 0.1 (static) | 0.632 (unconstrained) | Linear ramp alpha; plateaus instantly |
+| grl_unpadded_run3 | MSE on log(n_kaons) | 0.1 (dynamic ratio) | — | NaN at epoch 6; encoder destabilised |
+| grl_unpadded_run4/5 | MSE on log(n_kaons) | 0.05 (static+pretrain) | 0.633 | Pre-train phase added; no constraint gate |
+| grl_unpadded_run6 | MSE on log(n_kaons) | 0.5 | — (R²=−1.19) | Sign-flip Nash: encoder anti-encodes multiplicity |
+| grl_unpadded_run7 | CE on within-class n_kaons bins | 0.5 | 0.632 (gate not reached) | O@A drops to 0.606 under GRL; adversary settles at 1.31 < chance 1.609 |
+| **grl_unpadded_run8** | CE on within-class n_kaons bins | **2.0** | **0.630** | Adversary at chance; constrained Nash stable at epochs 50–110 |
+| grl_unpadded_run9 | CE bins + conditional on class | 2.0 | 0.6325 | Conditional adversary; similar result |
+| **grl_unpadded_run13** | CE bins + MSE(n_kaons, std of features) + conditional | **2.0** | **0.631** | Strongest adversary; both heads at chance; still O@A≈0.630 |
+
+**Run 13 key results (λ=2.0, conditional CE+MSE adversary, moment targets = [n_kaons, std(f_i)]):**
+- Pre-train O@A (no GRL): 0.630
+- Best constrained O@A: **0.631** (adv_ce ≈ 1.59/1.609, adv_mse ≈ 0.99/1.00)
+- Fresh-probe accuracy: 0.537 vs 0.200 chance
+
+**Interpretation:**
+- O@A is consistently ~0.630 across runs 8, 9, 13 despite very different adversary strengths.
+- Even with feature std distributions fully constrained to chance, the model still achieves ~0.630.
+- The constrained signal (~0.630) is ~2× run27 (0.316 on padded data).
+- The per-event *mean* of kinematic features (mean k_star, mean d_y, etc.) is left free (not adversarially constrained) — this is the likely remaining source of separation. Mean features encode genuine kinematics and are partially multiplicity-correlated but not purely so.
+- The DANN constraint is satisfied (co-trained adversary at chance); residual probe leakage reflects the conditional vs unconditional gap, not adversary failure.
+- Fresh probe being higher in run13 than run8 (0.537 vs 0.446) reflects a different Nash equilibrium, not more leakage — the conditional adversary pushes the encoder to a different embedding space that an unconditional probe can read more easily.
+
+---
+
 ## Key Null Results
 
 - EP cosine features (event-plane alignment) add no signal
 - NCE/density-ratio no better than BCE at this signal strength
-- GRL adversarial debiasing (multiplicity invariance) does not help
+- GRL adversarial debiasing (multiplicity invariance, padded data) does not help
 - Consistency regularization (kaon dropout) adds no novel signal
 - EM pseudo-labeling shifts operating point but not separability — confirms physics ceiling, not label-noise artifact
 - Ultra-minimal [k*, cos_θ*] collapses to near-random — f_pt, d_y, d_phi essential
 - Global K⁻ pool padding was a real artifact masking genuine signal
+- GRL regression adversary (MSE on log n_kaons) produces sign-flip Nash: encoder anti-encodes multiplicity, fresh R²=−1.19, padded O@A=0.185 — unusable
+- GRL classification adversary with λ<1 (run7): adversary settles above chance-floor, O@A drops only to 0.606 — incomplete debiasing

@@ -97,25 +97,27 @@ WeighterNet = DensityRatioNet
 class OmegaTransformerGRL(_TransformerBase):
     """OmegaTransformer + gradient-reversal adversary for multiplicity debiasing.
 
-    Two heads share the same CLS embedding:
+    Three heads share the same CLS embedding:
       1. classifier  — predicts Anti/Omega logits (main task)
-      2. adversary   — predicts log(n_kaons) from gradient-reversed embedding
+      2. adv_cls     — classifies GLOBAL n_kaons quantile bin (n_bins classes)
+                       Unconditional: no class label. CE loss. Prevents sign-flip Nash.
+                       On unpadded data n_kaons ∝ class, so global bins directly target
+                       the between-class multiplicity artifact.
+      3. adv_reg     — regresses [n_kaons, std(f_i)] for each feature. Unconditional. MSE.
 
-    The adversary loss pulls the encoder toward representations that predict
-    multiplicity well; the gradient reversal inverts those gradients so the
-    *encoder* is pushed toward multiplicity-invariant representations.
+    Both adversary heads are UNCONDITIONAL (no class label). This forces the encoder
+    to be blind to the raw kaon count and its distributional spread — the primary
+    artifact on unpadded data where Ω⁻ events have many K⁺ and Ω̄⁺ events have few K⁻.
 
-    Motivation: the charge-balancing procedure pads K⁻ in Ω̄⁺ events to match
-    K⁺ count.  Any residual correlation between n_kaons and particle identity is
-    a book-keeping artifact.  Debiasing against multiplicity forces the model to
-    learn genuine kinematic pattern differences.
-
-    alpha (GRL strength) should be annealed from 0 → 1 during training to let
-    the classifier converge before the adversary destabilises the encoder.
+    Per-event MEANS of features are deliberately not targeted: they carry the genuine
+    kinematic physics signal (junction fragmentation kinematics) we are trying to measure.
     """
 
-    def __init__(self, in_channels, d_model, nhead, num_layers, dim_feedforward, dropout=0.1):
+    def __init__(self, in_channels, d_model, nhead, num_layers, dim_feedforward,
+                 dropout=0.1, n_bins=5):
         super().__init__(in_channels, d_model, nhead, num_layers, dim_feedforward, dropout)
+        self.n_bins  = n_bins
+        self.n_stats = 1 + in_channels  # n_kaons + std(f_i) for each classifier input feature
 
         self.classifier = nn.Sequential(
             nn.LayerNorm(d_model),
@@ -125,16 +127,18 @@ class OmegaTransformerGRL(_TransformerBase):
             nn.Linear(d_model // 2, 2),
         )
 
-        # Adversary: 2-layer MLP predicting log(n_kaons)
-        self.adversary = nn.Sequential(
+        # Adversary: shared trunk → n_stats independent CE heads (one per statistic).
+        # trunk width mirrors classifier; output reshaped to (B, n_stats, n_bins).
+        self.adv_trunk = nn.Sequential(
             nn.LayerNorm(d_model),
-            nn.Linear(d_model, 32),
+            nn.Linear(d_model, d_model // 2),
             nn.GELU(),
-            nn.Linear(32, 1),
         )
+        self.adv_head = nn.Linear(d_model // 2, self.n_stats * n_bins)
 
     def forward(self, x, padding_mask=None, alpha=1.0):
-        cls = self.encode(x, padding_mask)          # (B, d_model)
-        logits = self.classifier(cls)               # (B, 2)
-        adv_out = self.adversary(grad_reverse(cls, alpha)).squeeze(-1)  # (B,)
-        return logits, adv_out
+        cls    = self.encode(x, padding_mask)                              # (B, d_model)
+        logits = self.classifier(cls)                                      # (B, 2)
+        h      = self.adv_trunk(grad_reverse(cls, alpha))                  # (B, d_model//2)
+        adv    = self.adv_head(h).view(-1, self.n_stats, self.n_bins)      # (B, n_stats, n_bins)
+        return logits, adv
