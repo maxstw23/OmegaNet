@@ -82,26 +82,48 @@ class KaonDataset(Dataset):
         return self.data[i]  # (x, y)
 
 
-def make_collate_fn(subsample_dist=None):
-    """subsample_dist: list of Anti-Omega n_kaons values to sample from, or None."""
+def make_collate_fn(subsample_dist=None, with_full=False):
+    """subsample_dist: list of Anti-Omega n_kaons values to sample from, or None.
+    with_full: if True, batch entries are 4-tuples (x_node, y, eff_w, x_full) and
+               the collated batch includes a padded x_full tensor as a 5th element.
+    """
     def collate_fn(batch):
-        xs, ys, eff_ws = zip(*batch)
-        processed = []
-        for x, y in zip(xs, ys):
+        if with_full:
+            xs, ys, eff_ws, x_fulls = zip(*batch)
+        else:
+            xs, ys, eff_ws = zip(*batch)
+            x_fulls = (None,) * len(xs)
+
+        processed_node = []
+        processed_full = []
+        for x, y, xf in zip(xs, ys, x_fulls):
             if subsample_dist is not None and y.item() == 0:  # Omega event
                 k = min(random.choice(subsample_dist), x.shape[0])
-                idx = torch.randperm(x.shape[0])[:k]
-                x = x[idx]
-            processed.append(x)
-        max_len = max(x.shape[0] for x in processed)
-        n_feat  = processed[0].shape[1]
-        padded = torch.zeros(len(processed), max_len, n_feat)
+                perm = torch.randperm(x.shape[0])[:k]
+                x = x[perm]
+                if xf is not None:
+                    xf = xf[perm]
+            processed_node.append(x)
+            processed_full.append(xf)
+
+        max_len = max(x.shape[0] for x in processed_node)
+        n_feat  = processed_node[0].shape[1]
+        padded = torch.zeros(len(processed_node), max_len, n_feat)
         # mask: True = padding position (ignored by attention)
-        mask = torch.ones(len(processed), max_len, dtype=torch.bool)
-        for i, x in enumerate(processed):
+        mask = torch.ones(len(processed_node), max_len, dtype=torch.bool)
+        for i, x in enumerate(processed_node):
             n = x.shape[0]
             padded[i, :n] = x
             mask[i, :n] = False
+
+        if with_full:
+            n_full = processed_full[0].shape[1]
+            padded_full = torch.zeros(len(processed_full), max_len, n_full)
+            for i, xf in enumerate(processed_full):
+                n = xf.shape[0]
+                padded_full[i, :n] = xf
+            return padded, torch.stack(ys), mask, torch.stack(eff_ws), padded_full
+
         return padded, torch.stack(ys), mask, torch.stack(eff_ws)
     return collate_fn
 
@@ -145,19 +167,23 @@ def run_training(args, target_anti_rec=0.90):
         # Extract per-event loss weight (mean inverse efficiency across kaons)
         eff_w = x[:, EFF_WEIGHT_IDX].mean()
 
+        x_full_raw = entry['x']  # full 16-feature tensor (raw, for position extraction)
         x = x[:, config.FEATURE_IDX]
         if config.KSTAR_IDX is not None:
             x[:, config.KSTAR_IDX] = torch.clamp(x[:, config.KSTAR_IDX], max=config.KSTAR_CLIP)
         x = (x - feature_means) / feature_stds
 
-        dataset.append((x, target, eff_w))
+        if args.edge_bias:
+            dataset.append((x, target, eff_w, x_full_raw))
+        else:
+            dataset.append((x, target, eff_w))
 
     labels_t = torch.tensor(labels)
     n_o = (labels_t == 0).sum().item()
     n_a = (labels_t == 1).sum().item()
 
     # Anti-Omega n_kaons empirical distribution (for subsampling Omega events)
-    anti_nk_dist = [x.shape[0] for x, lbl, _ in dataset if lbl.item() == 1]
+    anti_nk_dist = [entry[0].shape[0] for entry in dataset if entry[1].item() == 1]
 
     log(f"Run {run_number} | features={config.FEATURE_NAMES} | IN_CHANNELS={config.IN_CHANNELS} | D_MODEL={config.D_MODEL}")
     log(f"Dataset: {args.data} ({config.DATA_PATH}) | {n_o} Omega, {n_a} Anti-Omega")
@@ -167,7 +193,7 @@ def run_training(args, target_anti_rec=0.90):
     # 80/20 split (seed already fixed above)
     random.shuffle(dataset)
     split = int(0.8 * len(dataset))
-    collate = make_collate_fn(anti_nk_dist if args.subsample else None)
+    collate = make_collate_fn(anti_nk_dist if args.subsample else None, with_full=args.edge_bias)
     train_loader = DataLoader(KaonDataset(dataset[:split]), batch_size=config.BATCH_SIZE,
                               shuffle=True, collate_fn=collate,
                               num_workers=4, pin_memory=True, persistent_workers=True)
@@ -184,10 +210,12 @@ def run_training(args, target_anti_rec=0.90):
         dropout=config.DROPOUT_RATE,
     )
     if args.edge_bias:
-        dy_idx   = config.FEATURE_NAMES.index("d_y")
-        dphi_idx = config.FEATURE_NAMES.index("d_phi")
-        model = OmegaTransformerEdge(**common, dy_idx=dy_idx, dphi_idx=dphi_idx).to(config.DEVICE)
-        log(f"Architecture: OmegaTransformerEdge (dy_idx={dy_idx}, dphi_idx={dphi_idx})")
+        model = OmegaTransformerEdge(
+            **common,
+            y_kaon_idx=config.Y_KAON_IDX,
+            phi_kaon_idx=config.PHI_KAON_IDX,
+        ).to(config.DEVICE)
+        log(f"Architecture: OmegaTransformerEdge (y_kaon_idx={config.Y_KAON_IDX}, phi_kaon_idx={config.PHI_KAON_IDX})")
     else:
         model = OmegaTransformer(**common).to(config.DEVICE)
     n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -207,11 +235,16 @@ def run_training(args, target_anti_rec=0.90):
     log(f"Starting training... (max_epochs={max_epochs})\n")
     for epoch in range(1, max_epochs + 1):
         model.train()
-        for x, y, mask, eff_w in train_loader:
+        for batch in train_loader:
+            x, y, mask, eff_w = batch[0], batch[1], batch[2], batch[3]
             x, y, mask = x.to(config.DEVICE), y.to(config.DEVICE), mask.to(config.DEVICE)
             eff_w = eff_w.to(config.DEVICE)
             optimizer.zero_grad()
-            out = model(x, mask)
+            if args.edge_bias:
+                x_full = batch[4].to(config.DEVICE)
+                out = model(x, x_full, mask)
+            else:
+                out = model(x, mask)
             p = torch.softmax(out, dim=1)[:, 1].clamp(1e-7, 1 - 1e-7)
             is_a = (y == 1)
             is_o = (y == 0)
@@ -235,9 +268,13 @@ def run_training(args, target_anti_rec=0.90):
         ema_model.eval()
         all_p_anti, all_y = [], []
         with torch.no_grad():
-            for x, y, mask, _ in val_loader:
-                x, y, mask = x.to(config.DEVICE), y.to(config.DEVICE), mask.to(config.DEVICE)
-                out = ema_model(x, mask)
+            for batch in val_loader:
+                x, y, mask = batch[0].to(config.DEVICE), batch[1].to(config.DEVICE), batch[2].to(config.DEVICE)
+                if args.edge_bias:
+                    x_full = batch[4].to(config.DEVICE)
+                    out = ema_model(x, x_full, mask)
+                else:
+                    out = ema_model(x, mask)
                 p_anti = torch.softmax(out, dim=1)[:, 1]
                 all_p_anti.append(p_anti.cpu())
                 all_y.append(y.cpu())

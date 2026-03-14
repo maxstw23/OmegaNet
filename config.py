@@ -57,6 +57,8 @@ FEATURE_REGISTRY = [
     "o_y_abs",                                                       # 11: |y_Ω| broadcast
     "net_kaon",                                                      # 12: n_K+(real)−n_K−(real), broadcast
     "eff_weight",                                                    # 13: inverse efficiency 1/ε(pT,η) — correction weight (low ε → high weight)
+    "f_y",                                                           # 14: kaon rapidity y_K (absolute coordinates) — auxiliary for edge computation
+    "f_phi",                                                         # 15: kaon azimuth φ_K (rad) — auxiliary for edge computation
 ]
 
 # Active features for this run — edit ONLY this list to change the feature set.
@@ -67,9 +69,11 @@ FEATURE_NAMES = [
 ]
 
 # Derived — do not edit manually.
-FEATURE_IDX = [FEATURE_REGISTRY.index(f) for f in FEATURE_NAMES]
-IN_CHANNELS = len(FEATURE_NAMES)
-KSTAR_IDX   = FEATURE_NAMES.index("k_star") if "k_star" in FEATURE_NAMES else None
+FEATURE_IDX  = [FEATURE_REGISTRY.index(f) for f in FEATURE_NAMES]
+IN_CHANNELS  = len(FEATURE_NAMES)
+KSTAR_IDX    = FEATURE_NAMES.index("k_star") if "k_star" in FEATURE_NAMES else None
+Y_KAON_IDX   = FEATURE_REGISTRY.index("f_y")    # index in full 16-feature tensor
+PHI_KAON_IDX = FEATURE_REGISTRY.index("f_phi")  # index in full 16-feature tensor
 
 # ── Efficiency helper function ─────────────────────────────────────────────────
 def get_efficiency_2d(pT, eta, cent, particle):

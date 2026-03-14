@@ -212,7 +212,8 @@ def run_balanced_preprocessing(input_file, output_file):
         node_features = np.stack([
             f_pt, k_star, d_y, d_phi, o_pt_broadcast, cos_theta_st,
             o_cos_psi1, o_cos2_psi2, f_cos_psi1, f_cos2_psi2,
-            d_y_signed, o_y_abs, net_kaon_broadcast, eff_weights  # indices 10–13
+            d_y_signed, o_y_abs, net_kaon_broadcast, eff_weights,   # indices 10–13
+            y_k, f_phi,                                              # indices 14–15: auxiliary position features
         ], axis=1)
 
         y_label = 1 if o_charge > 0 else 0
@@ -235,7 +236,8 @@ def run_balanced_preprocessing(input_file, output_file):
     feature_names = [
         "f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star",
         "o_cos_psi1", "o_cos2_psi2", "f_cos_psi1", "f_cos2_psi2",
-        "d_y_signed", "o_y_abs", "net_kaon", "eff_weight"
+        "d_y_signed", "o_y_abs", "net_kaon", "eff_weight",
+        "f_y", "f_phi",
     ]
     for name, m, s in zip(feature_names, means, stds):
         print(f"  {name}: mean={m:.4f}, std={s:.4f}")
@@ -329,11 +331,12 @@ def run_unpadded_preprocessing(input_file, output_file):
             for pt, eta in zip(f_pt, f_eta)
         ])
 
-        # 14 features: 13-column layout + eff_weight at index 13
+        # 16 features: indices 0–13 as before; 14–15 are auxiliary kaon position features
         node_features = np.stack([
             f_pt, k_star, d_y, d_phi, o_pt_broadcast, cos_theta_st,
             o_cos_psi1, o_cos2_psi2, f_cos_psi1, f_cos2_psi2,
-            d_y_signed, o_y_abs, net_kaon_broadcast, eff_weights  # indices 10–13
+            d_y_signed, o_y_abs, net_kaon_broadcast, eff_weights,   # indices 10–13
+            y_k, f_phi,                                              # indices 14–15: auxiliary position features
         ], axis=1)
 
         y_label = 1 if o_charge > 0 else 0
@@ -356,7 +359,8 @@ def run_unpadded_preprocessing(input_file, output_file):
     feature_names = [
         "f_pt", "k_star", "d_y", "d_phi", "o_pt", "cos_theta_star",
         "o_cos_psi1", "o_cos2_psi2", "f_cos_psi1", "f_cos2_psi2",
-        "d_y_signed", "o_y_abs", "net_kaon", "eff_weight"
+        "d_y_signed", "o_y_abs", "net_kaon", "eff_weight",
+        "f_y", "f_phi",
     ]
     for name, m, s in zip(feature_names, means, stds):
         print(f"  {name}: mean={m:.4f}, std={s:.4f}")

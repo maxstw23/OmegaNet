@@ -1,27 +1,30 @@
+import math
 import torch
 import torch.nn as nn
 
 
 class OmegaTransformerEdge(nn.Module):
-    """OmegaTransformer with pairwise kaon-kaon edge bias in attention.
+    """OmegaTransformer with geometrically correct kaon-kaon edge bias in attention.
 
-    For each pair (i, j) of kaons, computes geometric edge features
-    (ΔR, Δy, cos Δφ) and maps them to per-head attention biases via a small
-    MLP.  The bias is added to the attention logits before softmax, allowing
-    the model to explicitly see inter-kaon spatial structure that CLS pooling
-    alone cannot capture.
+    For each pair (i, j) of kaons, computes true kaon-kaon separation features
+    (|Δy_KK|, |Δφ_KK|, ΔR_KK) from absolute kaon positions stored in x_full,
+    and maps them to per-head attention biases via a small MLP.
+
+    Edges are symmetric and charge-blind (absolute differences).
+    The edge MLP output layer is near-zero initialised to avoid pre-corrupting
+    attention patterns before any learning has occurred.
 
     Args:
-        dy_idx:   index of d_y   in the (post-normalisation) feature tensor
-        dphi_idx: index of d_phi in the (post-normalisation) feature tensor
+        y_kaon_idx:   index of kaon rapidity (f_y)  in the full 16-feature tensor
+        phi_kaon_idx: index of kaon azimuth  (f_phi) in the full 16-feature tensor
     """
 
     def __init__(self, in_channels, d_model, nhead, num_layers,
-                 dim_feedforward, dropout=0.1, dy_idx=1, dphi_idx=2):
+                 dim_feedforward, dropout=0.1, y_kaon_idx=14, phi_kaon_idx=15):
         super().__init__()
-        self.nhead    = nhead
-        self.dy_idx   = dy_idx
-        self.dphi_idx = dphi_idx
+        self.nhead   = nhead
+        self.y_idx   = y_kaon_idx
+        self.phi_idx = phi_kaon_idx
 
         self.input_proj = nn.Linear(in_channels, d_model)
 
@@ -34,6 +37,9 @@ class OmegaTransformerEdge(nn.Module):
             nn.GELU(),
             nn.Linear(16, nhead),
         )
+        # Near-zero init on output layer to avoid dominating QK logits at epoch 0
+        nn.init.normal_(self.edge_mlp[-1].weight, std=0.01)
+        nn.init.zeros_(self.edge_mlp[-1].bias)
 
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=d_model,
@@ -53,27 +59,37 @@ class OmegaTransformerEdge(nn.Module):
             nn.Linear(d_model // 2, 2),
         )
 
-    def forward(self, x, padding_mask=None):
-        # x: (B, N, C) — normalised kaon features
-        B, N, _ = x.shape
+    def forward(self, x_node, x_full, padding_mask=None):
+        # x_node: [B, N, in_channels] — normalised node features for transformer
+        # x_full: [B, N, 16]          — full raw feature tensor for position extraction
+        # B = batch size, N = number of kaons in event
+        B, N, _ = x_node.shape
 
-        # ── Pairwise edge features ────────────────────────────────────────────
-        # Absolute differences → symmetric, charge-blind (no signed Δ that encodes K+/K− order)
-        dy   = torch.abs(x[:, :, self.dy_idx  ].unsqueeze(2) - x[:, :, self.dy_idx  ].unsqueeze(1))  # [B,N,N]
-        dphi = torch.abs(x[:, :, self.dphi_idx].unsqueeze(2) - x[:, :, self.dphi_idx].unsqueeze(1))  # [B,N,N]
-        dR   = torch.sqrt(dy**2 + dphi**2 + 1e-8)                                                     # [B,N,N]
+        # ── Geometrically correct kaon-kaon edge features ─────────────────────
+        y_K   = x_full[:, :, self.y_idx]    # [B, N]
+        phi_K = x_full[:, :, self.phi_idx]  # [B, N]
 
-        edge_feat = torch.stack([dR, dy, dphi], dim=-1)   # [B,N,N,3] — no cos(), raw |Δφ|
-        edge_bias = self.edge_mlp(edge_feat)                           # [B,N,N,nhead]
+        # Outer difference: result[b, i, j] = coord[b, i] − coord[b, j]
+        # unsqueeze(2): [B, N, 1] (kaon i); unsqueeze(1): [B, 1, N] (kaon j)
+        # broadcasting → [B, N, N]
+        dy_kk   = torch.abs(y_K.unsqueeze(2) - y_K.unsqueeze(1))    # |y_Ki − y_Kj|, [B, N, N]
+        # wrap angular gap to (−π, π] then take |·| → [0, π]
+        dphi_kk = torch.abs(
+            (phi_K.unsqueeze(2) - phi_K.unsqueeze(1) + math.pi) % (2 * math.pi) - math.pi
+        )                                                             # |φ_Ki − φ_Kj|, [B, N, N]
+        dr_kk   = torch.sqrt(dy_kk**2 + dphi_kk**2 + 1e-8)          # ΔR_KK,          [B, N, N]
+
+        edge_feat = torch.stack([dy_kk, dphi_kk, dr_kk], dim=-1)    # [B, N, N, 3]
+        edge_bias = self.edge_mlp(edge_feat)                         # [B, N, N, nhead]
 
         # Reshape to [B*nhead, N, N]; CLS gets zero bias → pad to [B*nhead, N+1, N+1]
         edge_bias = edge_bias.permute(0, 3, 1, 2).reshape(B * self.nhead, N, N)
         attn_bias = torch.zeros(B * self.nhead, N + 1, N + 1,
-                                device=x.device, dtype=x.dtype)
+                                device=x_node.device, dtype=x_node.dtype)
         attn_bias[:, 1:, 1:] = edge_bias   # kaon-kaon block; CLS rows/cols = 0
 
         # ── Standard forward ──────────────────────────────────────────────────
-        h   = self.input_proj(x)
+        h   = self.input_proj(x_node)
         cls = self.cls_token.expand(B, -1, -1)
         h   = torch.cat([cls, h], dim=1)   # [B, 1+N, d_model]
 
