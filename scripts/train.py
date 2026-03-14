@@ -36,12 +36,12 @@ def omega_rec_at_anti_target(p_scores, is_anti, is_omega, target=0.90):
 # ── Optional CLI feature override ─────────────────────────────────────────────
 def _parse_args():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--data", choices=["padded", "unpadded"], default="padded")
+    parser.add_argument("--data", choices=["padded", "unpadded"], default="unpadded")
     parser.add_argument("--features", type=str, default=None,
                         help="Comma-separated feature names to override config.FEATURE_NAMES")
     parser.add_argument("--target-anti-rec", type=float, default=0.90,
                         help="Anti recall target for operating-point metric (default: 0.90)")
-    parser.add_argument("--subsample", action="store_true",
+    parser.add_argument("--subsample", action="store_true", default=True,
                         help="Subsample Omega K+ to Anti-Omega n_kaons distribution (unpadded data)")
     parser.add_argument("--edge-bias", action="store_true",
                         help="Use OmegaTransformerEdge: add pairwise (ΔR, Δy, cosΔφ) attention bias")
@@ -126,6 +126,7 @@ def run_training(args, target_anti_rec=0.90):
     dataset = []
     labels = []
 
+    print(f"Dataset: {config.DATA_PATH} | subsample={args.subsample}")
     print("Preparing Transformer dataset...")
     for entry in tqdm(raw_data):
         x, y = entry['x'], entry['y']

@@ -77,7 +77,7 @@ Key design choices:
   this allows the model to learn multi-kaon correlations rather than single-kaon features.
 - **274,626 parameters** — deliberately small to avoid overfitting on weak signal.
 
-Input features (6, after ablation studies):
+Input features (7, unpadded+subsampling regime):
 
 | Feature | Description |
 |---|---|
@@ -87,6 +87,13 @@ Input features (6, after ablation studies):
 | `\|φ_K − φ_Ω\|` | Absolute azimuthal separation |
 | `cos θ*` | Beam-axis angle in pair rest frame |
 | `\|y_K\| − \|y_Ω\|` | Midrapidity proximity gap (signed) |
+| `net_kaon` | n_K⁺ − n_K⁻ broadcast over event kaons (event-level charge asymmetry) |
+
+`net_kaon` encodes the global K⁺/K⁻ imbalance and is a legitimate physics feature in the
+unpadded+subsampling regime: subsampling removes the per-event *count* shortcut while
+`net_kaon` retains the *event-level* charge asymmetry signal, which reflects genuine baryon
+transport. The two are distinct: count = number of tokens the model sees; `net_kaon` = the
+full-event K⁺−K⁻ difference regardless of how many tokens are shown.
 
 Excluded features: `o_pt` (p̄ absorption biases Ω̄⁺ efficiency), `o_y_abs` (introduces biased
 rapidity shift), EP cosines (confirmed inert, run18).

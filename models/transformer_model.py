@@ -58,11 +58,12 @@ class OmegaTransformerEdge(nn.Module):
         B, N, _ = x.shape
 
         # ── Pairwise edge features ────────────────────────────────────────────
-        dy   = x[:, :, self.dy_idx  ].unsqueeze(2) - x[:, :, self.dy_idx  ].unsqueeze(1)  # [B,N,N]
-        dphi = x[:, :, self.dphi_idx].unsqueeze(2) - x[:, :, self.dphi_idx].unsqueeze(1)  # [B,N,N]
-        dR   = torch.sqrt(dy**2 + dphi**2 + 1e-8)                                          # [B,N,N]
+        # Absolute differences → symmetric, charge-blind (no signed Δ that encodes K+/K− order)
+        dy   = torch.abs(x[:, :, self.dy_idx  ].unsqueeze(2) - x[:, :, self.dy_idx  ].unsqueeze(1))  # [B,N,N]
+        dphi = torch.abs(x[:, :, self.dphi_idx].unsqueeze(2) - x[:, :, self.dphi_idx].unsqueeze(1))  # [B,N,N]
+        dR   = torch.sqrt(dy**2 + dphi**2 + 1e-8)                                                     # [B,N,N]
 
-        edge_feat = torch.stack([dR, dy, torch.cos(dphi)], dim=-1)   # [B,N,N,3]
+        edge_feat = torch.stack([dR, dy, dphi], dim=-1)   # [B,N,N,3] — no cos(), raw |Δφ|
         edge_bias = self.edge_mlp(edge_feat)                           # [B,N,N,nhead]
 
         # Reshape to [B*nhead, N, N]; CLS gets zero bias → pad to [B*nhead, N+1, N+1]
