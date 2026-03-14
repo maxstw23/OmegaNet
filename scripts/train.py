@@ -45,6 +45,8 @@ def _parse_args():
                         help="Subsample Omega K+ to Anti-Omega n_kaons distribution (unpadded data)")
     parser.add_argument("--edge-bias", action="store_true",
                         help="Use OmegaTransformerEdge: add pairwise (ΔR, Δy, cosΔφ) attention bias")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Dry run: use 1000 samples and 2 epochs for pipeline testing")
     args, _ = parser.parse_known_args()
     if args.data == "unpadded":
         config.DATA_PATH  = config.DATA_PATH_UNPADDED
@@ -123,10 +125,15 @@ def run_training(args, target_anti_rec=0.90):
     feature_stds = stats['stds'][config.FEATURE_IDX]
 
     raw_data = torch.load(config.DATA_PATH)
+
+    # Dry run: limit to 1000 samples
+    if args.dry_run:
+        raw_data = raw_data[:1000]
+
     dataset = []
     labels = []
 
-    print(f"Dataset: {config.DATA_PATH} | subsample={args.subsample}")
+    print(f"Dataset: {config.DATA_PATH} | subsample={args.subsample} | dry_run={args.dry_run}")
     print("Preparing Transformer dataset...")
     for entry in tqdm(raw_data):
         x, y = entry['x'], entry['y']
@@ -191,8 +198,9 @@ def run_training(args, target_anti_rec=0.90):
     best_o_rec_at_target = -1.0
     epochs_no_improvement = 0
 
-    log("Starting training...\n")
-    for epoch in range(1, config.EPOCHS + 1):
+    max_epochs = 2 if args.dry_run else config.EPOCHS
+    log(f"Starting training... (max_epochs={max_epochs})\n")
+    for epoch in range(1, max_epochs + 1):
         model.train()
         for x, y, mask in train_loader:
             x, y, mask = x.to(config.DEVICE), y.to(config.DEVICE), mask.to(config.DEVICE)
