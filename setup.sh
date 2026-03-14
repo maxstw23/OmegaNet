@@ -45,6 +45,10 @@ pip install torch --index-url https://download.pytorch.org/whl/cu124
 echo "Installing tqdm..."
 pip install tqdm
 
+# Install uproot and awkward (for ROOT file handling)
+echo "Installing uproot and awkward..."
+pip install uproot awkward
+
 echo ""
 echo "=== Setup Complete ==="
 echo ""
