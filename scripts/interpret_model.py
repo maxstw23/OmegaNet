@@ -47,10 +47,10 @@ def collate_fn(batch):
 
 
 def load_val_set():
-    stats = torch.load(config.STATS_PATH)
+    stats = torch.load(config.STATS_PATH_UNPADDED)
     feat_means = stats['means'][config.FEATURE_IDX]
     feat_stds  = stats['stds'][config.FEATURE_IDX]
-    raw_data = torch.load(config.DATA_PATH)
+    raw_data = torch.load(config.DATA_PATH_UNPADDED)
     dataset = []
     for entry in raw_data:
         x, y = entry['x'], entry['y']

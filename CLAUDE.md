@@ -17,6 +17,7 @@
 - **Keep docs current**: After any significant change, update the relevant doc. Docs are the single source of truth.
 - **Commit at checkpoints**: Small, focused commits after each meaningful unit of work.
 - **Be frugal**: Batch reads/edits, use targeted searches. Token efficiency is a real constraint.
+- **Use Serena for code**: Prefer Serena's symbolic tools (`get_symbols_overview`, `find_symbol`, `search_for_pattern`, `replace_symbol_body`) over `Read`, `Grep`, `Edit`, or the `Explore` agent for all code exploration and editing.
 
 ## Environment
 

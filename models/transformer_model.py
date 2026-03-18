@@ -11,8 +11,11 @@ class OmegaTransformerEdge(nn.Module):
     and maps them to per-head attention biases via a small MLP.
 
     Edges are symmetric and charge-blind (absolute differences).
-    The edge MLP output layer is near-zero initialised to avoid pre-corrupting
-    attention patterns before any learning has occurred.
+    The K-K attention block uses the full MLP output (std=0.01 init, small nonzero
+    at epoch 0).  A learnable scalar gate (edge_scale, init=0) multiplies the CLS
+    centrality terms only: the CLS token starts blind to edge geometry and opens up
+    gradually.  Keeping the K-K block nonzero from epoch 0 is required for correct
+    PyTorch mask-merge behavior when src_key_padding_mask is also provided.
 
     Args:
         y_kaon_idx:   index of kaon rapidity (f_y)  in the full 16-feature tensor
@@ -37,9 +40,11 @@ class OmegaTransformerEdge(nn.Module):
             nn.GELU(),
             nn.Linear(16, nhead),
         )
-        # Near-zero init on output layer to avoid dominating QK logits at epoch 0
+        # Near-zero init on output layer: K-K bias ~0.04 at epoch 0 (small but nonzero)
         nn.init.normal_(self.edge_mlp[-1].weight, std=0.01)
         nn.init.zeros_(self.edge_mlp[-1].bias)
+        # Gate for CLS centrality terms: starts at 0 so CLS sees no edge signal at epoch 0
+        self.edge_scale = nn.Parameter(torch.zeros(1))
 
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=d_model,
@@ -70,8 +75,6 @@ class OmegaTransformerEdge(nn.Module):
         phi_K = x_full[:, :, self.phi_idx]  # [B, N]
 
         # Outer difference: result[b, i, j] = coord[b, i] − coord[b, j]
-        # unsqueeze(2): [B, N, 1] (kaon i); unsqueeze(1): [B, 1, N] (kaon j)
-        # broadcasting → [B, N, N]
         dy_kk   = torch.abs(y_K.unsqueeze(2) - y_K.unsqueeze(1))    # |y_Ki − y_Kj|, [B, N, N]
         # wrap angular gap to (−π, π] then take |·| → [0, π]
         dphi_kk = torch.abs(
@@ -79,14 +82,26 @@ class OmegaTransformerEdge(nn.Module):
         )                                                             # |φ_Ki − φ_Kj|, [B, N, N]
         dr_kk   = torch.sqrt(dy_kk**2 + dphi_kk**2 + 1e-8)          # ΔR_KK,          [B, N, N]
 
-        edge_feat = torch.stack([dy_kk, dphi_kk, dr_kk], dim=-1)    # [B, N, N, 3]
-        edge_bias = self.edge_mlp(edge_feat)                         # [B, N, N, nhead]
+        edge_feat     = torch.stack([dy_kk, dphi_kk, dr_kk], dim=-1) # [B, N, N, 3]
+        edge_bias_raw = self.edge_mlp(edge_feat)                      # [B, N, N, nhead]
 
-        # Reshape to [B*nhead, N, N]; CLS gets zero bias → pad to [B*nhead, N+1, N+1]
-        edge_bias = edge_bias.permute(0, 3, 1, 2).reshape(B * self.nhead, N, N)
+        # CLS centrality: mean edge influence each kaon receives from all others
+        # kaon_central[b, h, i] = mean_j edge_bias_raw[b, i, j, h]
+        kaon_central = edge_bias_raw.mean(dim=2)                      # [B, N, nhead]
+        kaon_central = kaon_central.permute(0, 2, 1)                  # [B, nhead, N]
+        kaon_central = kaon_central.reshape(B * self.nhead, N)        # [B*nhead, N]
+
+        # Reshape kaon-kaon block to [B*nhead, N, N]; CLS gets zero-init bias via gate
+        edge_bias = edge_bias_raw.permute(0, 3, 1, 2).reshape(B * self.nhead, N, N)
+
+        # Build full [B*nhead, N+1, N+1] bias:
+        #   K-K block: small nonzero values from std=0.01 MLP init (never all-zeros)
+        #   CLS rows:  kaon_central * edge_scale — starts at 0, opens with gate
         attn_bias = torch.zeros(B * self.nhead, N + 1, N + 1,
                                 device=x_node.device, dtype=x_node.dtype)
-        attn_bias[:, 1:, 1:] = edge_bias   # kaon-kaon block; CLS rows/cols = 0
+        attn_bias[:, 1:, 1:] = edge_bias                              # kaon-kaon block
+        attn_bias[:, 0, 1:]  = kaon_central * self.edge_scale         # CLS → kaon
+        attn_bias[:, 1:, 0]  = kaon_central * self.edge_scale         # kaon → CLS (symmetric)
 
         # ── Standard forward ──────────────────────────────────────────────────
         h   = self.input_proj(x_node)
@@ -96,6 +111,7 @@ class OmegaTransformerEdge(nn.Module):
         if padding_mask is not None:
             cls_mask     = torch.zeros(B, 1, dtype=torch.bool, device=padding_mask.device)
             padding_mask = torch.cat([cls_mask, padding_mask], dim=1)
+            padding_mask = padding_mask.float().masked_fill(padding_mask, float('-inf'))
 
         h = self.transformer(h, mask=attn_bias, src_key_padding_mask=padding_mask)
         return self.classifier(h[:, 0])
@@ -143,6 +159,7 @@ class OmegaTransformer(nn.Module):
         if padding_mask is not None:
             cls_mask = torch.zeros(batch_size, 1, dtype=torch.bool, device=padding_mask.device)
             padding_mask = torch.cat([cls_mask, padding_mask], dim=1)
+            padding_mask = padding_mask.float().masked_fill(padding_mask, float('-inf'))
 
         h = self.transformer(h, src_key_padding_mask=padding_mask)
 
